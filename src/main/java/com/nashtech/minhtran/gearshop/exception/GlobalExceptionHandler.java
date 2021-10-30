@@ -30,6 +30,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
     }
 
+    @ExceptionHandler({EmptyBodyException.class})
+    public ResponseEntity<MessageResponse> handleEmptyBody(EmptyBodyException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
+    @ExceptionHandler({ManufacturerNotExistException.class})
+    public ResponseEntity<MessageResponse> handleNotExistManufacturer(ManufacturerNotExistException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
+    @ExceptionHandler({EmptyNameManufacturerException.class})
+    public ResponseEntity<MessageResponse> handleEmptyNameManufacturer(EmptyNameManufacturerException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
     @ExceptionHandler({Exception.class})
     public ResponseEntity<MessageResponse> handleException(Exception e){
         logger.error(e.getMessage());
