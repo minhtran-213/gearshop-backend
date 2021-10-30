@@ -1,5 +1,6 @@
 package com.nashtech.minhtran.gearshop.services.implementation;
 
+import com.nashtech.minhtran.gearshop.dto.UserDTO;
 import com.nashtech.minhtran.gearshop.dto.UserJwt;
 import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
@@ -16,7 +17,9 @@ import com.nashtech.minhtran.gearshop.security.jwt.JwtUtils;
 import com.nashtech.minhtran.gearshop.security.services.UserDetailsImpl;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import com.nashtech.minhtran.gearshop.util.Validation;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -27,10 +30,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,6 +50,8 @@ public class UserServiceImpl implements UserService {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    ModelMapper mapper;
 
     @Override
     public JwtResponse login(@Valid LoginRequest loginRequest) {
@@ -99,5 +101,33 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
         return new MessageResponse("User registered successful", HttpStatus.OK.value());
+    }
+
+    @Override
+    public Page<UserDTO> getAllUser(Optional<Integer> page,
+                                    Optional<Integer> size,
+                                    Optional<String> sort,
+                                    Optional<String> direction,
+                                    Optional<String> firstName) {
+        Sort.Direction sortDirection = Sort.Direction.ASC;
+        if (direction.isPresent()){
+            if (direction.get().equalsIgnoreCase("desc")){
+                sortDirection = Sort.Direction.DESC;
+            }
+        }
+
+        Pageable pageable = PageRequest.of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
+        Page<User> users;
+        Page<UserDTO> result;
+        if (firstName.isPresent()){
+            users = userRepository.findByFirstName(firstName.get(), pageable);
+            List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
+            result = new PageImpl<>(userList, pageable, userList.size());
+        } else {
+            users = userRepository.findAll(pageable);
+            List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
+            result = new PageImpl<>(userList, pageable, userList.size());
+        }
+        return result;
     }
 }

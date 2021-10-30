@@ -1,13 +1,18 @@
 package com.nashtech.minhtran.gearshop.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.io.Serializable;
 import java.util.Date;
 
 @Data
-public class UserDTO {
+@AllArgsConstructor
+@NoArgsConstructor
+public class UserDTO{
     private Integer id;
 
     @NotBlank
