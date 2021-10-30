@@ -17,6 +17,7 @@ import com.nashtech.minhtran.gearshop.security.jwt.JwtUtils;
 import com.nashtech.minhtran.gearshop.security.services.UserDetailsImpl;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import com.nashtech.minhtran.gearshop.util.Validation;
+import io.swagger.v3.oas.annotations.Operation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
