@@ -5,11 +5,12 @@ import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.model.Manufacturer;
 import org.springframework.data.domain.Page;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 public interface ManufacturerService {
     Page<Manufacturer> getAllManufacturer(Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
-    MessageResponse addNewManufacturer (ManufacturerDTO manufacturerDTO);
-    MessageResponse updateManufacturer (int id, ManufacturerDTO manufacturerDTO);
+    MessageResponse addNewManufacturer (@Valid ManufacturerDTO manufacturerDTO);
+    MessageResponse updateManufacturer (int id, @Valid ManufacturerDTO manufacturerDTO);
     MessageResponse deleteManufacturer (int id);
 }

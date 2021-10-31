@@ -48,6 +48,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
     }
 
+    @ExceptionHandler({EmptyNameCategoryException.class})
+    public ResponseEntity<MessageResponse> handleEmptyNameCategory(EmptyNameCategoryException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
+    @ExceptionHandler({CategoryNotExistException.class})
+    public ResponseEntity<MessageResponse> handleNotExistCategory(CategoryNotExistException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
     @ExceptionHandler({Exception.class})
     public ResponseEntity<MessageResponse> handleException(Exception e){
         logger.error(e.getMessage());

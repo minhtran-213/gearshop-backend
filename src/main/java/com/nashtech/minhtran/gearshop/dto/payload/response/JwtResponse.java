@@ -1,6 +1,5 @@
 package com.nashtech.minhtran.gearshop.dto.payload.response;
 
-import com.nashtech.minhtran.gearshop.dto.UserJwt;
 import lombok.Data;
 
 import java.util.List;
