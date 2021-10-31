@@ -1,7 +1,7 @@
 package com.nashtech.minhtran.gearshop.services.implementation;
 
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
-import com.nashtech.minhtran.gearshop.dto.UserJwt;
+import com.nashtech.minhtran.gearshop.dto.payload.response.UserJwt;
 import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.JwtResponse;
@@ -17,7 +17,6 @@ import com.nashtech.minhtran.gearshop.security.jwt.JwtUtils;
 import com.nashtech.minhtran.gearshop.security.services.UserDetailsImpl;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import com.nashtech.minhtran.gearshop.util.Validation;
-import io.swagger.v3.oas.annotations.Operation;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;

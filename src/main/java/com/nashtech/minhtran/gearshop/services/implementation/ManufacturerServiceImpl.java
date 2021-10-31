@@ -17,6 +17,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @Service
@@ -52,7 +53,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     }
 
     @Override
-    public MessageResponse addNewManufacturer(ManufacturerDTO manufacturerDTO) {
+    public MessageResponse addNewManufacturer(@Valid ManufacturerDTO manufacturerDTO) {
         if (manufacturerDTO == null){
             throw new EmptyBodyException("Body cannot be null");
         } else if (manufacturerDTO.getName().isEmpty()){
@@ -66,14 +67,14 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     }
 
     @Override
-    public MessageResponse updateManufacturer(int id, ManufacturerDTO manufacturerDTO) {
+    public MessageResponse updateManufacturer(int id, @Valid ManufacturerDTO manufacturerDTO) {
         Manufacturer manufacturer = manufacturerRepository.findById(id).orElse(null);
         if (manufacturer == null){
             throw new ManufacturerNotExistException("Manufacturer not exist");
         } else if (manufacturerDTO == null){
             throw new EmptyBodyException("Body cannot be null");
         }
-        else if (manufacturer.getName().isEmpty()){
+        else if (manufacturerDTO.getName().isEmpty()){
             throw new EmptyNameManufacturerException("Name cannot be empty");
         } else {
             manufacturer.setName(manufacturerDTO.getName());

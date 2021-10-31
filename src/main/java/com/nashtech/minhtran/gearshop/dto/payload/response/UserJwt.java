@@ -1,4 +1,4 @@
-package com.nashtech.minhtran.gearshop.dto;
+package com.nashtech.minhtran.gearshop.dto.payload.response;
 
 import lombok.Builder;
 import lombok.Data;
