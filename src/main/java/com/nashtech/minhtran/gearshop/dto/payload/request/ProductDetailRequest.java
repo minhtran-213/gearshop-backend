@@ -15,6 +15,7 @@ public class ProductDetailRequest {
     private String color;
 
     @Min(value = 0)
+    @NotBlank
     private double price;
 
     private String size;
@@ -25,5 +26,5 @@ public class ProductDetailRequest {
     @Min(value = 0)
     private int quantity;
 
-    private int productId;
+    private int productId = 0;
 }

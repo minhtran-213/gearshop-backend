@@ -60,6 +60,24 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
     }
 
+    @ExceptionHandler({ProductNotExistException.class})
+    public ResponseEntity<MessageResponse> handleNotExistProduct(ProductNotExistException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
+    @ExceptionHandler({ProductDetailNotExistException.class})
+    public ResponseEntity<MessageResponse> handleNotExistProductDetail(ProductDetailNotExistException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
+    @ExceptionHandler({EmptyProductIdException.class})
+    public ResponseEntity<MessageResponse> handleEmptyProductId(EmptyProductIdException e){
+        messageResponse = new MessageResponse(e.getMessage(), HttpStatus.BAD_REQUEST.value());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+    }
+
     @ExceptionHandler({Exception.class})
     public ResponseEntity<MessageResponse> handleException(Exception e){
         logger.error(e.getMessage());
