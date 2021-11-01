@@ -1,6 +1,8 @@
 package com.nashtech.minhtran.gearshop.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -13,6 +15,7 @@ import java.util.Collection;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class ProductDetail {
 
     @Id
@@ -40,8 +43,10 @@ public class ProductDetail {
     private Product product;
 
     @OneToMany(mappedBy = "productDetail", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @JsonIgnore
     private Collection<Rate> rates;
 
     @OneToMany(mappedBy = "productDetail", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Collection<OrderDetail> orderDetails;
 }

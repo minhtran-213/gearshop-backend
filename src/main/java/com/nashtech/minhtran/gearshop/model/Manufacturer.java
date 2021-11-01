@@ -1,5 +1,6 @@
 package com.nashtech.minhtran.gearshop.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,5 +26,6 @@ public class Manufacturer {
     private String name;
 
     @OneToMany(mappedBy = "manufacturer", fetch = FetchType.LAZY)
+    @JsonIgnore
     private Collection<Product> products;
 }

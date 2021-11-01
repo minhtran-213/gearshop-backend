@@ -41,7 +41,12 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "unauthorized", content = @Content)
     })
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        JwtResponse jwtResponse = userService.login(loginRequest);
+        JwtResponse jwtResponse = null;
+        try {
+            jwtResponse = userService.login(loginRequest);
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        }
         if (jwtResponse != null) {
             return ResponseEntity.status(HttpStatus.OK).body(jwtResponse);
         } else {

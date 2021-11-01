@@ -1,6 +1,7 @@
 package com.nashtech.minhtran.gearshop.api.admin;
 
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.model.User;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -34,14 +35,14 @@ public class UserControllerAdmin {
 
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getUsers(@RequestParam Optional<Integer> page,
-                                      @RequestParam Optional<Integer> size,
-                                      @RequestParam Optional<String> sort,
-                                      @RequestParam Optional<String> direction,
-                                      @RequestParam Optional<String> firstName) {
-       ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> getUsers(@RequestParam Optional<Integer> page,
+                                                @RequestParam Optional<Integer> size,
+                                                @RequestParam Optional<String> sort,
+                                                @RequestParam Optional<String> direction,
+                                                @RequestParam Optional<String> firstName) {
+       ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            Page<UserDTO> result = userService.getAllUser(page, size, sort, direction, firstName);
+            ResponseDTO result = userService.getAllUser(page, size, sort, direction, firstName);
             response = ResponseEntity.ok().body(result);
         } catch (Exception e){
             logger.error(e.getMessage());
