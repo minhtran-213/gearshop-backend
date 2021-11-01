@@ -2,6 +2,7 @@ package com.nashtech.minhtran.gearshop.api.admin;
 
 import com.nashtech.minhtran.gearshop.dto.ManufacturerDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
 import com.nashtech.minhtran.gearshop.exception.EmptyNameManufacturerException;
 import com.nashtech.minhtran.gearshop.exception.ManufacturerNotExistException;
@@ -31,14 +32,14 @@ public class ManufacturerControllerAdmin {
 
     @GetMapping("/manufacturers")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAllManufacturer(@RequestParam Optional<Integer> page,
-                                                @RequestParam Optional<Integer> size,
-                                                @RequestParam Optional<String> sort,
-                                                @RequestParam Optional<String> direction,
-                                                @RequestParam Optional<String> name) {
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> getAllManufacturer(@RequestParam Optional<Integer> page,
+                                                          @RequestParam Optional<Integer> size,
+                                                          @RequestParam Optional<String> sort,
+                                                          @RequestParam Optional<String> direction,
+                                                          @RequestParam Optional<String> name) {
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            Page<Manufacturer> manufacturers = manufacturerService.getAllManufacturer(page, size, sort, direction, name);
+            ResponseDTO manufacturers = manufacturerService.getAllManufacturer(page, size, sort, direction, name);
             response = new ResponseEntity<>(manufacturers, HttpStatus.OK);
         } catch (Exception e){
             logger.error(e.getMessage());
@@ -48,10 +49,10 @@ public class ManufacturerControllerAdmin {
 
     @PostMapping("/manufacturer")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> addNewManufacturer(@RequestBody ManufacturerDTO manufacturerDTO){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> addNewManufacturer(@RequestBody ManufacturerDTO manufacturerDTO){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = manufacturerService.addNewManufacturer(manufacturerDTO);
+            ResponseDTO messageResponse = manufacturerService.addNewManufacturer(manufacturerDTO);
             response = new ResponseEntity<>(messageResponse, HttpStatus.OK);
         } catch (Exception e){
             logger.error(e.getMessage());
@@ -61,10 +62,10 @@ public class ManufacturerControllerAdmin {
 
     @PutMapping("/manufacturer/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateManufacturer(@PathVariable int id, @RequestBody ManufacturerDTO manufacturerDTO){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> updateManufacturer(@PathVariable int id, @RequestBody ManufacturerDTO manufacturerDTO){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = manufacturerService.updateManufacturer(id, manufacturerDTO);
+            ResponseDTO messageResponse = manufacturerService.updateManufacturer(id, manufacturerDTO);
             response = new ResponseEntity<>(messageResponse, HttpStatus.OK);
         } catch (Exception e){
             logger.error(e.getMessage());
@@ -74,10 +75,10 @@ public class ManufacturerControllerAdmin {
 
     @DeleteMapping("/manufacturer/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteManufacturer(@PathVariable int id){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> deleteManufacturer(@PathVariable int id){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = manufacturerService.deleteManufacturer(id);
+            ResponseDTO messageResponse = manufacturerService.deleteManufacturer(id);
             response = new ResponseEntity<>(messageResponse, HttpStatus.OK);
         } catch (Exception e){
             logger.error(e.getMessage());

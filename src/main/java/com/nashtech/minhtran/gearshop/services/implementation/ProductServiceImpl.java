@@ -1,10 +1,13 @@
 package com.nashtech.minhtran.gearshop.services.implementation;
 
+import com.nashtech.minhtran.gearshop.constants.ErrorCode;
+import com.nashtech.minhtran.gearshop.constants.SuccessCode;
 import com.nashtech.minhtran.gearshop.dto.ProductDetailDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductDetailRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateProductRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.Category;
 import com.nashtech.minhtran.gearshop.model.Manufacturer;
@@ -50,23 +53,36 @@ public class ProductServiceImpl implements ProductService {
     ModelMapper mapper;
 
     @Override
-    public List<ProductDetailDTO> getAllProductDetail(Optional<Integer> productId) {
+    public ResponseDTO getAllProductDetail(Optional<Integer> productId) throws RetrieveProductDetailException {
+        ResponseDTO responseDTO = new ResponseDTO();
         List<ProductDetailDTO> result = new ArrayList<>();
         if (productId.isPresent()) {
-            Product product = productRepository.findById(productId.get()).orElseThrow(ProductNotExistException::new);
-            List<ProductDetail> productDetails = productDetailRepository.findByProduct(product);
-            result = productDetails.stream().map(productDetail -> mapper.map(productDetail, ProductDetailDTO.class)).collect(Collectors.toList());
+            try {
+                Product product = productRepository.findById(productId.get()).orElseThrow(ProductNotExistException::new);
+                List<ProductDetail> productDetails = productDetailRepository.findByProduct(product);
+                result = productDetails.stream().map(productDetail -> mapper.map(productDetail, ProductDetailDTO.class)).collect(Collectors.toList());
+            } catch (Exception e) {
+                throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
+            }
         } else {
-            List<ProductDetail> productDetails = productDetailRepository.findAll();
-            result = productDetails.stream().map(productDetail -> mapper.map(productDetail, ProductDetailDTO.class)).collect(Collectors.toList());
+            try {
+                List<ProductDetail> productDetails = productDetailRepository.findAll();
+                result = productDetails.stream().map(productDetail -> mapper.map(productDetail, ProductDetailDTO.class)).collect(Collectors.toList());
+            } catch (Exception e) {
+                throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
+            }
         }
-        return result;
+        responseDTO.setTime(new Date());
+        responseDTO.setObject(result);
+        responseDTO.setSuccessCode(SuccessCode.RETRIEVE_PRODUCT_DETAIL_SUCCESS);
+        return responseDTO;
     }
 
     @Override
-    public MessageResponse addNewProductDetail(@Valid ProductDetailRequest productDetailRequest) {
+    public ResponseDTO addNewProductDetail(@Valid ProductDetailRequest productDetailRequest) throws EmptyProductIdException, ProductNotExistException {
+        ResponseDTO responseDTO = new ResponseDTO();
         if (productDetailRequest.getProductId() == 0) {
-            throw new EmptyProductIdException("Product must not be empty");
+            throw new EmptyProductIdException(ErrorCode.ERROR_PRODUCT_ID_EMPTY);
         }
         Product product = productRepository.findById(productDetailRequest.getProductId()).orElseThrow(ProductNotExistException::new);
         ProductDetail productDetail = ProductDetail.builder()
@@ -78,14 +94,20 @@ public class ProductServiceImpl implements ProductService {
                 .price(productDetailRequest.getPrice())
                 .quantity(productDetailRequest.getQuantity()).build();
         productDetailRepository.save(productDetail);
-        return new MessageResponse("Add successful", HttpStatus.OK.value());
+        responseDTO.setSuccessCode(SuccessCode.ADD_PRODUCT_DETAILS_SUCCESS);
+        responseDTO.setObject(true);
+        responseDTO.setTime(new Date());
+        return responseDTO;
     }
 
     @Override
-    public MessageResponse updateProductDetail(int id, @Valid ProductDetailRequest productDetailRequest) {
-        ProductDetail productDetail = productDetailRepository.findById(id).orElseThrow(ProductDetailNotExistException::new);
+    public ResponseDTO updateProductDetail(int id, @Valid ProductDetailRequest productDetailRequest) throws ProductDetailNotExistException, ProductNotExistException {
+        ResponseDTO responseDTO = new ResponseDTO();
+        ProductDetail productDetail = productDetailRepository.findById(id)
+                .orElseThrow(() -> new ProductDetailNotExistException(ErrorCode.ERROR_PRODUCT_DETAIL_NOT_EXIST));
         if (productDetailRequest.getProductId() != 0) {
-            Product product = productRepository.findById(productDetailRequest.getProductId()).orElseThrow(ProductNotExistException::new);
+            Product product = productRepository.findById(productDetailRequest.getProductId())
+                    .orElseThrow(() -> new ProductNotExistException(ErrorCode.ERROR_PRODUCT_NOT_EXIST));
             ProductDetailDTO productDetailDTO = ProductDetailDTO.builder()
                     .product(product)
                     .color(productDetailRequest.getColor())
@@ -108,21 +130,29 @@ public class ProductServiceImpl implements ProductService {
             productDetail = mapper.map(productDetailDTO, ProductDetail.class);
         }
         productDetailRepository.save(productDetail);
-        return new MessageResponse("update successful", HttpStatus.OK.value());
+        responseDTO.setTime(new Date());
+        responseDTO.setSuccessCode(SuccessCode.UPDATE_PRODUCT_DETAILS_SUCCESS);
+        responseDTO.setObject(true);
+        return responseDTO;
     }
 
     @Override
-    public MessageResponse deleteProductDetail(int id) {
-        ProductDetail productDetail = productDetailRepository.findById(id).orElseThrow(ProductDetailNotExistException::new);
+    public ResponseDTO deleteProductDetail(int id) throws ProductDetailNotExistException {
+        ResponseDTO responseDTO = new ResponseDTO();
+        ProductDetail productDetail = productDetailRepository.findById(id).orElseThrow(() -> new ProductDetailNotExistException(ErrorCode.ERROR_PRODUCT_DETAIL_NOT_EXIST));
         productDetailRepository.delete(productDetail);
-        return new MessageResponse("delete successful", HttpStatus.OK.value());
+        responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_DETAILS_SUCCESS);
+        responseDTO.setTime(new Date());
+        responseDTO.setObject(true);
+        return responseDTO;
     }
 
     @Override
-    public Page<Product> getAllProducts(Optional<Integer> page,
-                                        Optional<Integer> size,
-                                        Optional<String> sort,
-                                        Optional<String> direction, Optional<String> name) {
+    public ResponseDTO getAllProducts(Optional<Integer> page,
+                                      Optional<Integer> size,
+                                      Optional<String> sort,
+                                      Optional<String> direction, Optional<String> name) throws RetrieveProductException {
+        ResponseDTO responseDTO = new ResponseDTO();
         Sort.Direction sortDirection = Sort.Direction.ASC;
         if (direction.isPresent()) {
             if (direction.get().equalsIgnoreCase("desc")) {
@@ -133,20 +163,34 @@ public class ProductServiceImpl implements ProductService {
                 .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
         Page<Product> products;
         if (name.isPresent()) {
-            products = productRepository.findByName(name.get(), pageable);
+            try {
+                products = productRepository.findByName(name.get(), pageable);
+            } catch (Exception e) {
+                throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+            }
         } else {
-            products = productRepository.findAll(pageable);
+            try {
+                products = productRepository.findAll(pageable);
+            } catch (Exception e) {
+                throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+            }
         }
-        return products;
+        responseDTO.setObject(products);
+        responseDTO.setTime(new Date());
+        responseDTO.setSuccessCode(SuccessCode.RETRIEVE_PRODUCTS_SUCCESS);
+        return responseDTO;
     }
 
     @Override
-    public MessageResponse addNewProduct(@Valid ProductRequest productRequest) {
+    public ResponseDTO addNewProduct(@Valid ProductRequest productRequest) throws CategoryNotExistException, ManufacturerNotExistException, EmptyBodyException {
+        ResponseDTO responseDTO = new ResponseDTO();
         if (productRequest == null) {
-            throw new EmptyBodyException("Body cannot be null");
+            throw new EmptyBodyException(ErrorCode.EMPTY_BODY);
         }
-        Category category = categoryRepository.findById(productRequest.getCategoryId()).orElseThrow(() -> new CategoryNotExistException("Category not existed!"));
-        Manufacturer manufacturer = manufacturerRepository.findById(productRequest.getManufacturerId()).orElseThrow(() -> new ManufacturerNotExistException("Manufacturer not exist"));
+        Category category = categoryRepository.findById(productRequest.getCategoryId())
+                .orElseThrow(() -> new CategoryNotExistException(ErrorCode.ERROR_CATEGORY_NOT_EXIST));
+        Manufacturer manufacturer = manufacturerRepository.findById(productRequest.getManufacturerId())
+                .orElseThrow(() -> new ManufacturerNotExistException(ErrorCode.ERROR_MANUFACTURER_NOT_EXIST));
         Product product = Product.builder()
                 .name(productRequest.getName())
                 .createdDate(new Date())
@@ -155,27 +199,40 @@ public class ProductServiceImpl implements ProductService {
                 .category(category)
                 .build();
         productRepository.save(product);
-        return new MessageResponse("add successful", HttpStatus.OK.value());
+        responseDTO.setObject(true);
+        responseDTO.setTime(new Date());
+        responseDTO.setSuccessCode(SuccessCode.ADD_PRODUCT_SUCCESS);
+        return responseDTO;
     }
 
     @Override
-    public MessageResponse updateProduct(int id, @Valid UpdateProductRequest updateProductRequest) {
-        Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotExistException("Product not exist"));
-        Category category = categoryRepository.findById(updateProductRequest.getCategoryId()).orElseThrow(() -> new CategoryNotExistException("Category not existed!"));
-        Manufacturer manufacturer = manufacturerRepository.findById(updateProductRequest.getManufacturerId()).orElseThrow(() -> new ManufacturerNotExistException("Manufacturer not exist"));
+    public ResponseDTO updateProduct(int id, @Valid UpdateProductRequest updateProductRequest) throws ProductNotExistException, CategoryNotExistException, ManufacturerNotExistException {
+        ResponseDTO responseDTO = new ResponseDTO();
+        Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotExistException(ErrorCode.ERROR_PRODUCT_NOT_EXIST));
+        Category category = categoryRepository.findById(updateProductRequest.getCategoryId())
+                .orElseThrow(() -> new CategoryNotExistException(ErrorCode.ERROR_CATEGORY_NOT_EXIST));
+        Manufacturer manufacturer = manufacturerRepository.findById(updateProductRequest.getManufacturerId())
+                .orElseThrow(() -> new ManufacturerNotExistException(ErrorCode.ERROR_MANUFACTURER_NOT_EXIST));
         product.setManufacturer(manufacturer);
         product.setCategory(category);
         product.setName(updateProductRequest.getName());
         product.setDescription(updateProductRequest.getDescription());
         product.setUpdatedDate(new Date());
         productRepository.save(product);
-        return new MessageResponse("update successful", HttpStatus.OK.value());
+        responseDTO.setSuccessCode(SuccessCode.UPDATE_PRODUCT_SUCCESS);
+        responseDTO.setTime(new Date());
+        responseDTO.setObject(true);
+        return responseDTO;
     }
 
     @Override
-    public MessageResponse deleteProduct(int id) {
+    public ResponseDTO deleteProduct(int id) {
+        ResponseDTO responseDTO = new ResponseDTO();
         Product product = productRepository.findById(id).orElseThrow(() -> new ProductNotExistException("Product not exist"));
         productRepository.delete(product);
-        return new MessageResponse("delete successful", HttpStatus.OK.value());
+        responseDTO.setObject(true);
+        responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
+        responseDTO.setTime(new Date());
+        return responseDTO;
     }
 }

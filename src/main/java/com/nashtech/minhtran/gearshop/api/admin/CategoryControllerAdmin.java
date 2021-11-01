@@ -3,6 +3,7 @@ package com.nashtech.minhtran.gearshop.api.admin;
 import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.CategoryRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.CategoryNotExistException;
 import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
 import com.nashtech.minhtran.gearshop.exception.EmptyNameCategoryException;
@@ -34,15 +35,15 @@ public class CategoryControllerAdmin {
 
     @GetMapping("/categories")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAllCategories(@RequestParam Optional<Integer> page,
-                                              @RequestParam Optional<Integer> size,
-                                              @RequestParam Optional<String> sort,
-                                              @RequestParam Optional<String> direction,
-                                              @RequestParam Optional<String> name){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> getAllCategories(@RequestParam Optional<Integer> page,
+                                                        @RequestParam Optional<Integer> size,
+                                                        @RequestParam Optional<String> sort,
+                                                        @RequestParam Optional<String> direction,
+                                                        @RequestParam Optional<String> name){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            Page<CategoryDTO> categories = categoryService.getAllCategory(page, size, sort, direction, name);
-            response = ResponseEntity.ok().body(categories);
+            ResponseDTO responseDTO = categoryService.getAllCategory(page, size, sort, direction, name);
+            response = ResponseEntity.ok().body(responseDTO);
         } catch (Exception e){
             logger.error(e.getMessage());
         }
@@ -52,10 +53,10 @@ public class CategoryControllerAdmin {
 
     @PostMapping("/category")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> addNewCategory(@RequestBody CategoryRequest categoryRequest){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> addNewCategory(@RequestBody CategoryRequest categoryRequest){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = categoryService.addNewCategory(categoryRequest);
+            ResponseDTO messageResponse = categoryService.addNewCategory(categoryRequest);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (EmptyBodyException | EmptyNameCategoryException | CategoryNotExistException e){
             logger.error(e.getMessage());
@@ -66,10 +67,10 @@ public class CategoryControllerAdmin {
 
     @PutMapping("/category/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateCategory(@PathVariable int id, @RequestBody @Valid CategoryRequest categoryRequest){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> updateCategory(@PathVariable int id, @RequestBody @Valid CategoryRequest categoryRequest){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = categoryService.updateCategory(id, categoryRequest);
+            ResponseDTO messageResponse = categoryService.updateCategory(id, categoryRequest);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (EmptyBodyException | EmptyNameCategoryException | CategoryNotExistException e){
             logger.error(e.getMessage());
@@ -80,10 +81,10 @@ public class CategoryControllerAdmin {
 
     @DeleteMapping("/category/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteCategory (@PathVariable int id){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> deleteCategory (@PathVariable int id){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = categoryService.deleteCategory(id);
+            ResponseDTO messageResponse = categoryService.deleteCategory(id);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (CategoryNotExistException e){
             logger.error(e.getMessage());

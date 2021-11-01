@@ -5,6 +5,7 @@ import com.nashtech.minhtran.gearshop.dto.payload.request.ProductDetailRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateProductRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.CategoryNotExistException;
 import com.nashtech.minhtran.gearshop.exception.ManufacturerNotExistException;
 import com.nashtech.minhtran.gearshop.exception.ProductDetailNotExistException;
@@ -38,10 +39,10 @@ public class ProductControllerAdmin {
 
     @GetMapping("/productDetails")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAllProductDetails (@RequestParam Optional<Integer> productId){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> getAllProductDetails (@RequestParam Optional<Integer> productId){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            List<ProductDetailDTO> result = productService.getAllProductDetail(productId);
+            ResponseDTO result = productService.getAllProductDetail(productId);
             response = ResponseEntity.ok().body(result);
         } catch (ProductNotExistException e){
             logger.error(e.getMessage());
@@ -52,10 +53,10 @@ public class ProductControllerAdmin {
 
     @PostMapping("/productDetail")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> addNewProductDetail(@Valid @RequestBody ProductDetailRequest productDetailRequest){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> addNewProductDetail(@Valid @RequestBody ProductDetailRequest productDetailRequest){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = productService.addNewProductDetail(productDetailRequest);
+            ResponseDTO messageResponse = productService.addNewProductDetail(productDetailRequest);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (ProductNotExistException e){
             logger.error(e.getMessage());
@@ -66,10 +67,10 @@ public class ProductControllerAdmin {
 
     @PutMapping("/productDetail/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateProductDetail (@PathVariable int id, @Valid @RequestBody ProductDetailRequest productDetailRequest){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> updateProductDetail (@PathVariable int id, @Valid @RequestBody ProductDetailRequest productDetailRequest){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = productService.updateProductDetail(id, productDetailRequest);
+            ResponseDTO messageResponse = productService.updateProductDetail(id, productDetailRequest);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (ProductDetailNotExistException | ProductNotExistException e){
             logger.error(e.getMessage());
@@ -79,10 +80,10 @@ public class ProductControllerAdmin {
 
     @DeleteMapping("/productDetail/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteProductDetail(@PathVariable int id){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> deleteProductDetail(@PathVariable int id){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = productService.deleteProductDetail(id);
+            ResponseDTO messageResponse = productService.deleteProductDetail(id);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (ProductDetailNotExistException e){
             logger.error(e.getMessage());
@@ -92,14 +93,14 @@ public class ProductControllerAdmin {
 
     @GetMapping("/products")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> getAllProducts(@RequestParam Optional<Integer> page,
+    public ResponseEntity<ResponseDTO> getAllProducts(@RequestParam Optional<Integer> page,
                                             @RequestParam Optional<Integer> size,
                                             @RequestParam Optional<String> sort,
                                             @RequestParam Optional<String> direction,
                                             @RequestParam Optional<String> name){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            Page<Product> products = productService.getAllProducts(page, size, sort, direction, name);
+            ResponseDTO products = productService.getAllProducts(page, size, sort, direction, name);
             response = ResponseEntity.ok().body(products);
         }catch (Exception e){
             logger.error(e.getMessage());
@@ -109,10 +110,10 @@ public class ProductControllerAdmin {
 
     @PostMapping("/product")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> addNewProduct(@RequestBody ProductRequest productRequest){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> addNewProduct(@RequestBody ProductRequest productRequest){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = productService.addNewProduct(productRequest);
+            ResponseDTO messageResponse = productService.addNewProduct(productRequest);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (CategoryNotExistException | ManufacturerNotExistException e){
             logger.error(e.getMessage());
@@ -122,10 +123,10 @@ public class ProductControllerAdmin {
 
     @PutMapping("/product/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> updateProduct(@PathVariable int id, @RequestBody UpdateProductRequest updateProductRequest){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> updateProduct(@PathVariable int id, @RequestBody UpdateProductRequest updateProductRequest){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = productService.updateProduct(id, updateProductRequest);
+            ResponseDTO messageResponse = productService.updateProduct(id, updateProductRequest);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (CategoryNotExistException | ManufacturerNotExistException e){
             logger.error(e.getMessage());
@@ -135,10 +136,10 @@ public class ProductControllerAdmin {
 
     @DeleteMapping("/product/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> deleteProduct(@PathVariable int id){
-        ResponseEntity<?> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable int id){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = productService.deleteProduct(id);
+            ResponseDTO messageResponse = productService.deleteProduct(id);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (ProductNotExistException e){
             logger.error(e.getMessage());

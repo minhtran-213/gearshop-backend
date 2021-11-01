@@ -1,6 +1,9 @@
 package com.nashtech.minhtran.gearshop.services.implementation;
 
+import com.nashtech.minhtran.gearshop.constants.ErrorCode;
+import com.nashtech.minhtran.gearshop.constants.SuccessCode;
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.response.UserJwt;
 import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
@@ -8,6 +11,8 @@ import com.nashtech.minhtran.gearshop.dto.payload.response.JwtResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.exception.EmailExistException;
 import com.nashtech.minhtran.gearshop.exception.InvalidEmailException;
+import com.nashtech.minhtran.gearshop.exception.InvalidPasswordException;
+import com.nashtech.minhtran.gearshop.exception.RetrieveUserException;
 import com.nashtech.minhtran.gearshop.model.ERole;
 import com.nashtech.minhtran.gearshop.model.Role;
 import com.nashtech.minhtran.gearshop.model.User;
@@ -54,7 +59,7 @@ public class UserServiceImpl implements UserService {
     ModelMapper mapper;
 
     @Override
-    public JwtResponse login(@Valid LoginRequest loginRequest) {
+    public JwtResponse login(@Valid LoginRequest loginRequest) throws Exception {
         Authentication authentication = authenticationManager.
                 authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -75,11 +80,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public MessageResponse signup(@Valid SignupRequest signupRequest) {
-        if(!Validation.checkValidEmail(signupRequest.getEmail())){
+    public MessageResponse signup(@Valid SignupRequest signupRequest) throws InvalidPasswordException, InvalidEmailException, EmailExistException {
+        if (!Validation.checkValidEmail(signupRequest.getEmail())) {
             throw new InvalidEmailException("Email is invalid");
         }
-        if (userRepository.existsByEmail(signupRequest.getEmail())){
+        if (userRepository.existsByEmail(signupRequest.getEmail())) {
             throw new EmailExistException("Email has taken");
         }
         String newPassword = passwordEncoder.encode(signupRequest.getPassword());
@@ -104,14 +109,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Page<UserDTO> getAllUser(Optional<Integer> page,
-                                    Optional<Integer> size,
-                                    Optional<String> sort,
-                                    Optional<String> direction,
-                                    Optional<String> firstName) {
+    public ResponseDTO getAllUser(Optional<Integer> page,
+                                  Optional<Integer> size,
+                                  Optional<String> sort,
+                                  Optional<String> direction,
+                                  Optional<String> firstName) throws RetrieveUserException {
+        ResponseDTO responseDTO = new ResponseDTO();
         Sort.Direction sortDirection = Sort.Direction.ASC;
-        if (direction.isPresent()){
-            if (direction.get().equalsIgnoreCase("desc")){
+        if (direction.isPresent()) {
+            if (direction.get().equalsIgnoreCase("desc")) {
                 sortDirection = Sort.Direction.DESC;
             }
         }
@@ -119,15 +125,27 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
         Page<User> users;
         Page<UserDTO> result;
-        if (firstName.isPresent()){
-            users = userRepository.findByFirstName(firstName.get(), pageable);
-            List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
-            result = new PageImpl<>(userList, pageable, userList.size());
+        if (firstName.isPresent()) {
+            try {
+                users = userRepository.findByFirstName(firstName.get(), pageable);
+                List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
+                result = new PageImpl<>(userList, pageable, userList.size());
+            } catch (Exception e) {
+                throw new RetrieveUserException(ErrorCode.ERROR_RETRIEVE_USERS_ERROR);
+            }
         } else {
-            users = userRepository.findAll(pageable);
-            List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
-            result = new PageImpl<>(userList, pageable, userList.size());
+            try {
+                users = userRepository.findAll(pageable);
+                List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
+                result = new PageImpl<>(userList, pageable, userList.size());
+            } catch (Exception e) {
+                throw new RetrieveUserException(ErrorCode.ERROR_RETRIEVE_USERS_ERROR);
+            }
         }
-        return result;
+
+        responseDTO.setSuccessCode(SuccessCode.RETRIEVE_USERS_SUCCESS);
+        responseDTO.setTime(new Date());
+        responseDTO.setObject(result);
+        return responseDTO;
     }
 }
