@@ -3,7 +3,6 @@ package com.nashtech.minhtran.gearshop.services.implementation;
 import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
 import com.nashtech.minhtran.gearshop.dto.ManufacturerDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
 import com.nashtech.minhtran.gearshop.exception.EmptyNameManufacturerException;
@@ -18,11 +17,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -120,4 +120,23 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         responseDTO.setSuccessCode(SuccessCode.DELETE_MANUFACTURER_SUCCESS);
         return responseDTO;
     }
+
+    @Override
+    public ResponseDTO getAllManufacturers() throws RetrieveManufacturerException {
+        List<Manufacturer> manufacturers;
+        try {
+            manufacturers = manufacturerRepository.findAll(Sort.by("name"));
+        } catch (Exception e){
+            throw new RetrieveManufacturerException(ErrorCode.ERROR_RETRIEVE_MANUFACTURERS);
+        }
+        return new  ResponseDTO(SuccessCode.RETRIEVE_MANUFACTURERS_SUCCESS, manufacturers);
+    }
+
+    @Override
+    public ResponseDTO getManufacturer(int id) throws ManufacturerNotExistException {
+        Manufacturer manufacturer = manufacturerRepository.findById(id).orElseThrow(() -> new ManufacturerNotExistException(ErrorCode.ERROR_MANUFACTURER_NOT_EXIST));
+        return new ResponseDTO(SuccessCode.RETRIEVE_SINGLE_MANUFACTURERS_SUCCESS, manufacturer);
+    }
+
+
 }
