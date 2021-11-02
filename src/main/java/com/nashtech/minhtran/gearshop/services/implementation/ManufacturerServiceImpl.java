@@ -35,11 +35,11 @@ public class ManufacturerServiceImpl implements ManufacturerService {
     ModelMapper mapper;
 
     @Override
-    public ResponseDTO getAllManufacturer(Optional<Integer> page,
-                                          Optional<Integer> size,
-                                          Optional<String> sort,
-                                          Optional<String> direction,
-                                          Optional<String> name) throws RetrieveManufacturerException {
+    public ResponseDTO getAllManufacturerPaging(Optional<Integer> page,
+                                                Optional<Integer> size,
+                                                Optional<String> sort,
+                                                Optional<String> direction,
+                                                Optional<String> name) throws RetrieveManufacturerException {
         ResponseDTO responseDTO = new ResponseDTO();
         Sort.Direction sortDirection = Sort.Direction.ASC;
         if (direction.isPresent()) {

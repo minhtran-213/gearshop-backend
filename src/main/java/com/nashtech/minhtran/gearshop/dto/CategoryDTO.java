@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 
 import javax.validation.constraints.NotBlank;
+import java.util.Collection;
 
 @Data
 @NoArgsConstructor
@@ -18,5 +19,5 @@ public class CategoryDTO {
     @NotBlank
     private String name;
 
-    private Category category;
+    private Collection<CategoryBasicDTO> categories;
 }

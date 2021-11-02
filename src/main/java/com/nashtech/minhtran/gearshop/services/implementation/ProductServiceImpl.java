@@ -148,10 +148,10 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseDTO getAllProducts(Optional<Integer> page,
-                                      Optional<Integer> size,
-                                      Optional<String> sort,
-                                      Optional<String> direction, Optional<String> name) throws RetrieveProductException {
+    public ResponseDTO getAllProductsPaging(Optional<Integer> page,
+                                            Optional<Integer> size,
+                                            Optional<String> sort,
+                                            Optional<String> direction, Optional<String> name) throws RetrieveProductException {
         ResponseDTO responseDTO = new ResponseDTO();
         Sort.Direction sortDirection = Sort.Direction.ASC;
         if (direction.isPresent()) {

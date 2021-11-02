@@ -36,7 +36,7 @@ public class AuthController {
     @Operation(summary = "login")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "login successful",
-                    content = {@Content(mediaType = "application/type",
+                    content = {@Content(mediaType = "application/json",
                             schema = @Schema(implementation = JwtResponse.class))}),
             @ApiResponse(responseCode = "401", description = "unauthorized", content = @Content)
     })

@@ -1,18 +1,12 @@
 package com.nashtech.minhtran.gearshop.api.admin;
 
 import com.nashtech.minhtran.gearshop.dto.ManufacturerDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
-import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
-import com.nashtech.minhtran.gearshop.exception.EmptyNameManufacturerException;
-import com.nashtech.minhtran.gearshop.exception.ManufacturerNotExistException;
-import com.nashtech.minhtran.gearshop.model.Manufacturer;
 import com.nashtech.minhtran.gearshop.services.ManufacturerService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,7 +33,7 @@ public class ManufacturerControllerAdmin {
                                                           @RequestParam Optional<String> name) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            ResponseDTO manufacturers = manufacturerService.getAllManufacturer(page, size, sort, direction, name);
+            ResponseDTO manufacturers = manufacturerService.getAllManufacturerPaging(page, size, sort, direction, name);
             response = new ResponseEntity<>(manufacturers, HttpStatus.OK);
         } catch (Exception e){
             logger.error(e.getMessage());

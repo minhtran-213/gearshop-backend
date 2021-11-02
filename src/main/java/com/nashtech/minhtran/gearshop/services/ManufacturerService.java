@@ -10,7 +10,7 @@ import javax.validation.Valid;
 import java.util.Optional;
 
 public interface ManufacturerService {
-    ResponseDTO getAllManufacturer(Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
+    ResponseDTO getAllManufacturerPaging (Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
     ResponseDTO addNewManufacturer (@Valid ManufacturerDTO manufacturerDTO);
     ResponseDTO updateManufacturer (int id, @Valid ManufacturerDTO manufacturerDTO);
     ResponseDTO deleteManufacturer (int id);

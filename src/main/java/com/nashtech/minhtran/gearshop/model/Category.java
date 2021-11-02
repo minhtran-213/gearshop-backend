@@ -32,11 +32,9 @@ public class Category {
     private Category category;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
     private Collection<Category> categories;
 
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    @JsonIgnore
     private Collection<Product> products;
 }

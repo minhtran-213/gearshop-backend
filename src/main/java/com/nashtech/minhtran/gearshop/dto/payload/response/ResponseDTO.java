@@ -20,8 +20,8 @@ public class ResponseDTO {
         this.errorCode = errorCode;
     }
 
-    public ResponseDTO(Date time, String successCode, Object object) {
-        this.time = time;
+    public ResponseDTO(String successCode, Object object) {
+        this.time = new Date();
         this.successCode = successCode;
         this.object = object;
     }

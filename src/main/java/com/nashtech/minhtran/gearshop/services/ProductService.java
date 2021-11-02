@@ -20,10 +20,11 @@ public interface ProductService {
     ResponseDTO addNewProductDetail(@Valid ProductDetailRequest productDetailRequest);
     ResponseDTO updateProductDetail(int id, @Valid ProductDetailRequest productDetailRequest);
     ResponseDTO deleteProductDetail(int id);
-    ResponseDTO getAllProducts(Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
+    ResponseDTO getAllProductsPaging(Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
     ResponseDTO addNewProduct(@Valid ProductRequest productRequest);
     ResponseDTO updateProduct(int id, UpdateProductRequest updateProductRequest);
     ResponseDTO deleteProduct(int id);
-    ResponseDTO getProductsByManufacturerId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
-    ResponseDTO getProductsByCategoryId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
+    //TODO: add get product by manufacturerId and cateId
+//    ResponseDTO getProductsByManufacturerId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
+//    ResponseDTO getProductsBySubCategoryId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
 }

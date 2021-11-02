@@ -2,29 +2,27 @@ package com.nashtech.minhtran.gearshop.services.implementation;
 
 import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
+import com.nashtech.minhtran.gearshop.dto.CategoryBasicDTO;
 import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.CategoryRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.CategoryNotExistException;
 import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
 import com.nashtech.minhtran.gearshop.exception.EmptyNameCategoryException;
 import com.nashtech.minhtran.gearshop.exception.RetrieveCategoriesException;
 import com.nashtech.minhtran.gearshop.model.Category;
-import com.nashtech.minhtran.gearshop.model.Manufacturer;
 import com.nashtech.minhtran.gearshop.repo.CategoryRepository;
 import com.nashtech.minhtran.gearshop.services.CategoryService;
+import com.nashtech.minhtran.gearshop.util.converter.CategoryConverter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CategoryServiceImpl implements CategoryService {
@@ -35,12 +33,15 @@ public class CategoryServiceImpl implements CategoryService {
     @Autowired
     ModelMapper mapper;
 
+    @Autowired
+    CategoryConverter categoryConverter;
+
     @Override
-    public ResponseDTO getAllCategory(Optional<Integer> page,
-                                      Optional<Integer> size,
-                                      Optional<String> sort,
-                                      Optional<String> direction,
-                                      Optional<String> name) throws RetrieveCategoriesException {
+    public ResponseDTO getAllCategoryPaging(Optional<Integer> page,
+                                            Optional<Integer> size,
+                                            Optional<String> sort,
+                                            Optional<String> direction,
+                                            Optional<String> name) throws RetrieveCategoriesException {
         ResponseDTO responseDTO = new ResponseDTO();
         Sort.Direction sortDirection = Sort.Direction.ASC;
         if (direction.isPresent()){
@@ -51,11 +52,11 @@ public class CategoryServiceImpl implements CategoryService {
         Pageable pageable = PageRequest
                 .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
         Page<Category> categories;
-        Page<CategoryDTO> result;
+        Page<CategoryBasicDTO> result;
         if(name.isPresent()){
             try{
                 categories = categoryRepository.findByName(name.get(), pageable);
-                List<CategoryDTO> list = categories.stream().map(category -> mapper.map(category, CategoryDTO.class)).collect(Collectors.toList());
+                List<CategoryBasicDTO> list = categoryConverter.convertCategoriesToBasicDTOs(categories);
                 result = new PageImpl<>(list, pageable, list.size());
             } catch (Exception e){
                 throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
@@ -63,7 +64,7 @@ public class CategoryServiceImpl implements CategoryService {
         } else {
             try {
                 categories = categoryRepository.findAll(pageable);
-                List<CategoryDTO> list = categories.stream().map(category -> mapper.map(category, CategoryDTO.class)).collect(Collectors.toList());
+                List<CategoryBasicDTO> list = categoryConverter.convertCategoriesToBasicDTOs(categories);
                 result = new PageImpl<>(list, pageable, list.size());
             } catch (Exception e){
                 throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
@@ -73,6 +74,25 @@ public class CategoryServiceImpl implements CategoryService {
         responseDTO.setTime(new Date());
         responseDTO.setSuccessCode(SuccessCode.RETRIEVE_CATEGORIES_SUCCESS);
         return responseDTO;
+    }
+
+    @Override
+    public ResponseDTO getSubCategoriesByParentCategories(int id) throws RetrieveCategoriesException, CategoryNotExistException {
+        List<Category> categories;
+        List<CategoryBasicDTO> result;
+        try {
+            Category category =  categoryRepository.findById(id)
+                    .orElseThrow(() -> new CategoryNotExistException(ErrorCode.ERROR_CATEGORY_NOT_EXIST));
+            try {
+                categories = categoryRepository.findByCategory(category);
+                result = categoryConverter.convertCategoriesToBasicDTOs(categories);
+            } catch (Exception e){
+                throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
+            }
+        } catch (Exception e){
+            throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
+        }
+        return new ResponseDTO(SuccessCode.RETRIEVE_CATEGORIES_SUCCESS, result);
     }
 
     @Override

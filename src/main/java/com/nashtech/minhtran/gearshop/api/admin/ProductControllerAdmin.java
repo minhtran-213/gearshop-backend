@@ -1,30 +1,24 @@
 package com.nashtech.minhtran.gearshop.api.admin;
 
-import com.nashtech.minhtran.gearshop.dto.ProductDetailDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductDetailRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateProductRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.CategoryNotExistException;
 import com.nashtech.minhtran.gearshop.exception.ManufacturerNotExistException;
 import com.nashtech.minhtran.gearshop.exception.ProductDetailNotExistException;
 import com.nashtech.minhtran.gearshop.exception.ProductNotExistException;
-import com.nashtech.minhtran.gearshop.model.Product;
 import com.nashtech.minhtran.gearshop.services.ProductService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
-import org.hibernate.sql.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -100,7 +94,7 @@ public class ProductControllerAdmin {
                                             @RequestParam Optional<String> name){
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            ResponseDTO products = productService.getAllProducts(page, size, sort, direction, name);
+            ResponseDTO products = productService.getAllProductsPaging(page, size, sort, direction, name);
             response = ResponseEntity.ok().body(products);
         }catch (Exception e){
             logger.error(e.getMessage());

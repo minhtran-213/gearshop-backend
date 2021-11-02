@@ -1,20 +1,16 @@
 package com.nashtech.minhtran.gearshop.api.admin;
 
-import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.CategoryRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.CategoryNotExistException;
 import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
 import com.nashtech.minhtran.gearshop.exception.EmptyNameCategoryException;
-import com.nashtech.minhtran.gearshop.model.Category;
+import com.nashtech.minhtran.gearshop.exception.RetrieveCategoriesException;
 import com.nashtech.minhtran.gearshop.services.CategoryService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -42,12 +38,25 @@ public class CategoryControllerAdmin {
                                                         @RequestParam Optional<String> name){
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            ResponseDTO responseDTO = categoryService.getAllCategory(page, size, sort, direction, name);
+            ResponseDTO responseDTO = categoryService.getAllCategoryPaging(page, size, sort, direction, name);
             response = ResponseEntity.ok().body(responseDTO);
         } catch (Exception e){
             logger.error(e.getMessage());
         }
 
+        return response;
+    }
+
+    @GetMapping("/sub_categories")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> getAllSubCategoriesByParentId(@RequestParam int parentId){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO responseDTO = categoryService.getSubCategoriesByParentCategories(parentId);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (CategoryNotExistException |RetrieveCategoriesException e){
+            logger.error(e.getMessage());
+        }
         return response;
     }
 
