@@ -33,6 +33,9 @@ public class CategoryConverter {
     public List<CategoryDTO> convertCategoriesToDTOs(Page<Category> categories){
         return categories.stream().map(this::convertEntityToDTO).collect(Collectors.toList());
     }
+    public List<CategoryDTO> convertCategoriesToDTOs(List<Category> categories){
+        return categories.stream().map(this::convertEntityToDTO).collect(Collectors.toList());
+    }
     public List<CategoryBasicDTO> convertCategoriesToBasicDTOs(Page<Category> categories){
         return categories.stream().map(category -> modelMapper.map(category, CategoryBasicDTO.class)).collect(Collectors.toList());
     }

@@ -19,4 +19,5 @@ public interface CategoryService {
     ResponseDTO addNewCategory (@Valid CategoryRequest categoryRequest);
     ResponseDTO updateCategory (int id, @Valid CategoryRequest categoryRequest);
     ResponseDTO deleteCategory (int id);
+    ResponseDTO getAllCategories() throws RetrieveCategoriesException;
 }
