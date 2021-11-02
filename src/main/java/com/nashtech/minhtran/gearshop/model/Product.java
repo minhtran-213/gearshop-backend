@@ -42,7 +42,6 @@ public class Product {
         private Category category;
 
         @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-        @JsonIgnore
         private Collection<ProductDetail> productDetails;
 
         @Column(name = "createdDate", nullable = false)

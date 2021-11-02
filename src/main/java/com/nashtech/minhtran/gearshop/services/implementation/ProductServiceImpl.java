@@ -2,11 +2,11 @@ package com.nashtech.minhtran.gearshop.services.implementation;
 
 import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
+import com.nashtech.minhtran.gearshop.dto.ProductDTO;
 import com.nashtech.minhtran.gearshop.dto.ProductDetailDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductDetailRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateProductRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.Category;
@@ -18,13 +18,10 @@ import com.nashtech.minhtran.gearshop.repo.ManufacturerRepository;
 import com.nashtech.minhtran.gearshop.repo.ProductDetailRepository;
 import com.nashtech.minhtran.gearshop.repo.ProductRepository;
 import com.nashtech.minhtran.gearshop.services.ProductService;
+import com.nashtech.minhtran.gearshop.util.converter.ProductConverter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
+import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import javax.validation.Valid;
@@ -51,6 +48,9 @@ public class ProductServiceImpl implements ProductService {
 
     @Autowired
     ModelMapper mapper;
+
+    @Autowired
+    ProductConverter productConverter;
 
     @Override
     public ResponseDTO getAllProductDetail(Optional<Integer> productId) throws RetrieveProductDetailException {
@@ -162,20 +162,25 @@ public class ProductServiceImpl implements ProductService {
         Pageable pageable = PageRequest
                 .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
         Page<Product> products;
+        Page<ProductDTO> result;
         if (name.isPresent()) {
             try {
                 products = productRepository.findByName(name.get(), pageable);
+                List<ProductDTO> productDTOS = productConverter.convertEntitiesToDTOs(products);
+                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
             } catch (Exception e) {
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
         } else {
             try {
                 products = productRepository.findAll(pageable);
+                List<ProductDTO> productDTOS = productConverter.convertEntitiesToDTOs(products);
+                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
             } catch (Exception e) {
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
         }
-        responseDTO.setObject(products);
+        responseDTO.setObject(result);
         responseDTO.setTime(new Date());
         responseDTO.setSuccessCode(SuccessCode.RETRIEVE_PRODUCTS_SUCCESS);
         return responseDTO;
