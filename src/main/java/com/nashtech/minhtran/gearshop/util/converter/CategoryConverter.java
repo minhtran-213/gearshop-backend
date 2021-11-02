@@ -2,6 +2,7 @@ package com.nashtech.minhtran.gearshop.util.converter;
 
 import com.nashtech.minhtran.gearshop.dto.CategoryBasicDTO;
 import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
+import com.nashtech.minhtran.gearshop.dto.SingleCategoryDTO;
 import com.nashtech.minhtran.gearshop.model.Category;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,12 @@ public class CategoryConverter {
         categoryDTO.setId(category.getId());
         categoryDTO.setName(category.getName());
         categoryDTO.setCategories(categoryBasicDTOS);
+        return categoryDTO;
+    }
+
+    public SingleCategoryDTO convertEntityToSingleDTO(Category category){
+        SingleCategoryDTO categoryDTO = modelMapper.map(category, SingleCategoryDTO.class);
+        categoryDTO.setParentId(category.getCategory().getId());
         return categoryDTO;
     }
 

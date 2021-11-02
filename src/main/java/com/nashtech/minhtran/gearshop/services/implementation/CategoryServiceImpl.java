@@ -4,12 +4,10 @@ import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
 import com.nashtech.minhtran.gearshop.dto.CategoryBasicDTO;
 import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
+import com.nashtech.minhtran.gearshop.dto.SingleCategoryDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.CategoryRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
-import com.nashtech.minhtran.gearshop.exception.CategoryNotExistException;
-import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
-import com.nashtech.minhtran.gearshop.exception.EmptyNameCategoryException;
-import com.nashtech.minhtran.gearshop.exception.RetrieveCategoriesException;
+import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.Category;
 import com.nashtech.minhtran.gearshop.repo.CategoryRepository;
 import com.nashtech.minhtran.gearshop.services.CategoryService;
@@ -184,5 +182,17 @@ public class CategoryServiceImpl implements CategoryService {
             throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
         }
         return new ResponseDTO(SuccessCode.RETRIEVE_CATEGORIES_SUCCESS, result);
+    }
+
+    @Override
+    public ResponseDTO getCategory(int id) throws RetrieveSingleCategoryException, CategoryNotExistException {
+        SingleCategoryDTO categoryDTO = null;
+        try {
+            Category category = categoryRepository.findById(id).orElseThrow(() -> new CategoryNotExistException(ErrorCode.ERROR_CATEGORY_NOT_EXIST));
+            categoryDTO = categoryConverter.convertEntityToSingleDTO(category);
+        } catch (Exception e){
+            throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_SINGLE_CATEGORY);
+        }
+        return new ResponseDTO(SuccessCode.RETRIEVE_SINGLE_CATEGORY_SUCCESS, categoryDTO);
     }
 }

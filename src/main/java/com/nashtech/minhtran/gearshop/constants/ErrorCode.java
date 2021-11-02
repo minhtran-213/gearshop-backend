@@ -19,6 +19,7 @@ public final class ErrorCode {
 
 
     public final static String ERROR_RETRIEVE_CATEGORIES = "ERROR_RETRIEVE_CATEGORY";
+    public final static String ERROR_RETRIEVE_SINGLE_CATEGORY = "ERROR_RETRIEVE_SINGLE_CATEGORY";
     public final static String ERROR_UPDATE_CATEGORY = "ERROR_UPDATE_CATEGORY";
     public final static String ERROR_ADD_CATEGORY = "ERROR_ADD_CATEGORY";
     public final static String ERROR_DELETE_CATEGORY = "ERROR_DELETE_CATEGORY";
