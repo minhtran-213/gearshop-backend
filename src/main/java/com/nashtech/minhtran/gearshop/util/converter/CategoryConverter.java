@@ -2,6 +2,7 @@ package com.nashtech.minhtran.gearshop.util.converter;
 
 import com.nashtech.minhtran.gearshop.dto.CategoryBasicDTO;
 import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
+import com.nashtech.minhtran.gearshop.dto.SingleCategoryDTO;
 import com.nashtech.minhtran.gearshop.model.Category;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ public class CategoryConverter {
     @Autowired
     ModelMapper modelMapper;
 
-    public CategoryDTO convertEntityToDTO(Category category){
+    public CategoryDTO convertEntityToDTO(Category category) {
         CategoryDTO categoryDTO = modelMapper.map(category, CategoryDTO.class);
         Collection<Category> categories = category.getCategories();
         Collection<CategoryBasicDTO> categoryBasicDTOS = categories
@@ -30,13 +31,29 @@ public class CategoryConverter {
         return categoryDTO;
     }
 
-    public List<CategoryDTO> convertCategoriesToDTOs(Page<Category> categories){
+    public SingleCategoryDTO convertEntityToSingleDTO(Category category) {
+        SingleCategoryDTO categoryDTO = modelMapper.map(category, SingleCategoryDTO.class);
+        if (category.getCategory() != null) {
+            categoryDTO.setParentId(category.getCategory().getId());
+        } else {
+            categoryDTO.setParentId(0);
+        }
+        return categoryDTO;
+    }
+
+    public List<CategoryDTO> convertCategoriesToDTOs(Page<Category> categories) {
         return categories.stream().map(this::convertEntityToDTO).collect(Collectors.toList());
     }
-    public List<CategoryBasicDTO> convertCategoriesToBasicDTOs(Page<Category> categories){
+
+    public List<CategoryDTO> convertCategoriesToDTOs(List<Category> categories) {
+        return categories.stream().map(this::convertEntityToDTO).collect(Collectors.toList());
+    }
+
+    public List<CategoryBasicDTO> convertCategoriesToBasicDTOs(Page<Category> categories) {
         return categories.stream().map(category -> modelMapper.map(category, CategoryBasicDTO.class)).collect(Collectors.toList());
     }
-    public List<CategoryBasicDTO> convertCategoriesToBasicDTOs(List<Category> categories){
+
+    public List<CategoryBasicDTO> convertCategoriesToBasicDTOs(List<Category> categories) {
         return categories.stream().map(category -> modelMapper.map(category, CategoryBasicDTO.class)).collect(Collectors.toList());
     }
 }
