@@ -127,6 +127,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(messageResponse);
     }
 
+    @ExceptionHandler({RetrieveSingleCategoryException.class})
+    public ResponseEntity<ResponseDTO> handleRetrieveSingleCategory(RetrieveSingleCategoryException e){
+        logger.error(e.getMessage());
+        messageResponse = new ResponseDTO(new Date(), ErrorCode.ERROR_RETRIEVE_SINGLE_CATEGORY);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(messageResponse);
+    }
+
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ResponseDTO> handleException(Exception e){

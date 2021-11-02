@@ -1,14 +1,10 @@
 package com.nashtech.minhtran.gearshop.services;
 
-import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
-import com.nashtech.minhtran.gearshop.dto.ManufacturerDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.CategoryRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.CategoryNotExistException;
 import com.nashtech.minhtran.gearshop.exception.RetrieveCategoriesException;
-import com.nashtech.minhtran.gearshop.model.Category;
-import org.springframework.data.domain.Page;
+import com.nashtech.minhtran.gearshop.exception.RetrieveSingleCategoryException;
 
 import javax.validation.Valid;
 import java.util.Optional;
@@ -20,4 +16,5 @@ public interface CategoryService {
     ResponseDTO updateCategory (int id, @Valid CategoryRequest categoryRequest);
     ResponseDTO deleteCategory (int id);
     ResponseDTO getAllCategories() throws RetrieveCategoriesException;
+    ResponseDTO getCategory(int id) throws RetrieveSingleCategoryException, CategoryNotExistException;
 }
