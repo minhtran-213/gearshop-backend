@@ -1,10 +1,9 @@
 package com.nashtech.minhtran.gearshop.services;
 
 import com.nashtech.minhtran.gearshop.dto.ManufacturerDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
-import com.nashtech.minhtran.gearshop.model.Manufacturer;
-import org.springframework.data.domain.Page;
+import com.nashtech.minhtran.gearshop.exception.ManufacturerNotExistException;
+import com.nashtech.minhtran.gearshop.exception.RetrieveManufacturerException;
 
 import javax.validation.Valid;
 import java.util.Optional;
@@ -14,4 +13,6 @@ public interface ManufacturerService {
     ResponseDTO addNewManufacturer (@Valid ManufacturerDTO manufacturerDTO);
     ResponseDTO updateManufacturer (int id, @Valid ManufacturerDTO manufacturerDTO);
     ResponseDTO deleteManufacturer (int id);
+    ResponseDTO getAllManufacturers() throws RetrieveManufacturerException;
+    ResponseDTO getManufacturer(int id) throws ManufacturerNotExistException;
 }
