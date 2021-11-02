@@ -24,4 +24,6 @@ public interface ProductService {
     ResponseDTO addNewProduct(@Valid ProductRequest productRequest);
     ResponseDTO updateProduct(int id, UpdateProductRequest updateProductRequest);
     ResponseDTO deleteProduct(int id);
+    ResponseDTO getProductsByManufacturerId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
+    ResponseDTO getProductsByCategoryId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name);
 }
