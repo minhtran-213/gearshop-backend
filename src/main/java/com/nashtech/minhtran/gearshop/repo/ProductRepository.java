@@ -1,5 +1,6 @@
 package com.nashtech.minhtran.gearshop.repo;
 
+import com.nashtech.minhtran.gearshop.model.Manufacturer;
 import com.nashtech.minhtran.gearshop.model.Product;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
