@@ -36,7 +36,7 @@ public class ProductControllerAdmin {
     public ResponseEntity<ResponseDTO> getAllProductDetails (@RequestParam Optional<Integer> productId){
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            ResponseDTO result = productService.getAllProductDetail(productId);
+            ResponseDTO result = productService.getAllProductDetailByProduct(productId);
             response = ResponseEntity.ok().body(result);
         } catch (ProductNotExistException e){
             logger.error(e.getMessage());

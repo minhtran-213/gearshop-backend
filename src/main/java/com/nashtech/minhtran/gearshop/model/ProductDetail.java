@@ -43,10 +43,8 @@ public class ProductDetail {
     private Product product;
 
     @OneToMany(mappedBy = "productDetail", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    @JsonIgnore
     private Collection<Rate> rates;
 
     @OneToMany(mappedBy = "productDetail", fetch = FetchType.LAZY)
-    @JsonIgnore
     private Collection<OrderDetail> orderDetails;
 }

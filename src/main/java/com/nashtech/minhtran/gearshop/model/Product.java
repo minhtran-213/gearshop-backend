@@ -1,10 +1,7 @@
 package com.nashtech.minhtran.gearshop.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Collection;
@@ -17,7 +14,8 @@ import java.util.Date;
         @Index(name = "product_name_index", columnList = "name", unique = true),
                 @Index(name = "product_category_index", columnList = "categoryId")
         })
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder

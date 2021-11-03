@@ -2,8 +2,7 @@ package com.nashtech.minhtran.gearshop.services.implementation;
 
 import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
-import com.nashtech.minhtran.gearshop.dto.ProductDTO;
-import com.nashtech.minhtran.gearshop.dto.ProductDetailDTO;
+import com.nashtech.minhtran.gearshop.dto.*;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductDetailRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.ProductRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateProductRequest;
@@ -53,21 +52,26 @@ public class ProductServiceImpl implements ProductService {
     ProductConverter productConverter;
 
     @Override
-    public ResponseDTO getAllProductDetail(Optional<Integer> productId) throws RetrieveProductDetailException {
+    public ResponseDTO getAllProductDetailByProduct(Optional<Integer> productId) throws RetrieveProductDetailException, ProductNotExistException {
         ResponseDTO responseDTO = new ResponseDTO();
-        List<ProductDetailDTO> result = new ArrayList<>();
+        List<BasicProductDetailDTO> result;
         if (productId.isPresent()) {
             try {
-                Product product = productRepository.findById(productId.get()).orElseThrow(ProductNotExistException::new);
+                Product product = productRepository.findById(productId.get())
+                        .orElseThrow(ProductNotExistException::new);
                 List<ProductDetail> productDetails = productDetailRepository.findByProduct(product);
-                result = productDetails.stream().map(productDetail -> mapper.map(productDetail, ProductDetailDTO.class)).collect(Collectors.toList());
+                result = productDetails.stream()
+                        .map(productDetail -> mapper.map(productDetail, BasicProductDetailDTO.class))
+                        .collect(Collectors.toList());
             } catch (Exception e) {
                 throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
             }
         } else {
             try {
                 List<ProductDetail> productDetails = productDetailRepository.findAll();
-                result = productDetails.stream().map(productDetail -> mapper.map(productDetail, ProductDetailDTO.class)).collect(Collectors.toList());
+                result = productDetails.stream()
+                        .map(productDetail -> mapper.map(productDetail, BasicProductDetailDTO.class))
+                        .collect(Collectors.toList());
             } catch (Exception e) {
                 throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
             }
@@ -239,5 +243,109 @@ public class ProductServiceImpl implements ProductService {
         responseDTO.setSuccessCode(SuccessCode.DELETE_PRODUCT_SUCCESS);
         responseDTO.setTime(new Date());
         return responseDTO;
+    }
+
+    @Override
+    public ResponseDTO userGetAllProducts(Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> name) {
+        ResponseDTO responseDTO = new ResponseDTO();
+        Sort.Direction sortDirection = Sort.Direction.ASC;
+        if (direction.isPresent()) {
+            if (direction.get().equalsIgnoreCase("desc")) {
+                sortDirection = Sort.Direction.DESC;
+            }
+        }
+        Pageable pageable = PageRequest
+                .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
+        Page<Product> products;
+        Page<UserProductDTO> result;
+        if (name.isPresent()) {
+            try {
+                products = productRepository.findByName(name.get(), pageable);
+                List<UserProductDTO> productDTOS = productConverter.convertToUserDTO(products);
+                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
+            } catch (Exception e) {
+                throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+            }
+        } else {
+            try {
+                products = productRepository.findAll(pageable);
+                List<UserProductDTO> productDTOS = productConverter.convertToUserDTO(products);
+                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
+            } catch (Exception e) {
+                throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+            }
+        }
+        responseDTO.setObject(result);
+        responseDTO.setTime(new Date());
+        responseDTO.setSuccessCode(SuccessCode.RETRIEVE_PRODUCTS_SUCCESS);
+        return responseDTO;
+    }
+
+    @Override
+    public ResponseDTO getUserProductDetails(int productId) throws ProductNotExistException, RetrieveProductDetailException {
+        List<UserProductDetailDTO> result;
+
+        try {
+            Product product = productRepository.findById(productId)
+                    .orElseThrow(ProductNotExistException::new);
+            List<ProductDetail> productDetails = productDetailRepository.findByProduct(product);
+            result = productConverter.convertToListOfUserProductDetail(productDetails);
+        } catch (Exception e) {
+            throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
+        }
+
+        return new ResponseDTO(SuccessCode.RETRIEVE_PRODUCT_DETAIL_SUCCESS, result);
+    }
+
+    @Override
+    public ResponseDTO getProductsByManufacturerId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction) throws RetrieveProductException {
+        Page<UserProductDTO> result = new PageImpl<>(new ArrayList<>());
+        try {
+            Manufacturer manufacturer = manufacturerRepository.findById(id).orElseThrow(() -> new ManufacturerNotExistException(ErrorCode.ERROR_MANUFACTURER_NOT_EXIST));
+            Sort.Direction sortDirection = Sort.Direction.ASC;
+            if (direction.isPresent()) {
+                if (direction.get().equalsIgnoreCase("desc")) {
+                    sortDirection = Sort.Direction.DESC;
+                }
+            }
+            Pageable pageable = PageRequest
+                    .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
+            try {
+                Page<Product> products = productRepository.findByManufacturer(manufacturer, pageable);
+                List<UserProductDTO> list = productConverter.convertToUserDTO(products);
+                result = new PageImpl<>(list, pageable, list.size());
+            } catch (Exception e) {
+                throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+            }
+        } catch (Exception e) {
+            throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+        }
+        return new ResponseDTO(SuccessCode.RETRIEVE_PRODUCTS_SUCCESS, result);
+    }
+
+    @Override
+    public ResponseDTO getProductsByCategoryId(int id, Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction) throws RetrieveProductException {
+        Page<UserProductDTO> result = new PageImpl<>(new ArrayList<>());
+        try {
+            Category category = categoryRepository.findById(id).orElseThrow(() -> new CategoryNotExistException(ErrorCode.ERROR_CATEGORY_NOT_EXIST));
+            Sort.Direction sortDirection = Sort.Direction.ASC;
+            if (direction.isPresent()) {
+                if (direction.get().equalsIgnoreCase("desc")) {
+                    sortDirection = Sort.Direction.DESC;
+                }
+            }
+            Pageable pageable = PageRequest
+                    .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
+            try {
+                Page<Product> products = productRepository.findByCategory(category, pageable);
+                List<UserProductDTO> list = productConverter.convertToUserDTO(products);
+                result = new PageImpl<>(list, pageable, list.size());
+            } catch (Exception e) {
+                throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+            }
+        } catch (Exception e) {
+            throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
+        }
+        return new ResponseDTO(SuccessCode.RETRIEVE_PRODUCTS_SUCCESS, result);
     }
 }
