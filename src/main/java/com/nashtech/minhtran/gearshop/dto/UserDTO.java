@@ -1,5 +1,6 @@
 package com.nashtech.minhtran.gearshop.dto;
 
+import com.nashtech.minhtran.gearshop.model.Address;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Date;
 
 @Data
@@ -19,8 +21,6 @@ public class UserDTO{
     private String email;
 
     private String phoneNumber;
-
-    private String address;
 
     @NotBlank
     private String firstName;

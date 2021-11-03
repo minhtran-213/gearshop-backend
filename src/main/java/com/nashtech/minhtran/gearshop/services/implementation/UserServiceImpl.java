@@ -3,16 +3,14 @@ package com.nashtech.minhtran.gearshop.services.implementation;
 import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.response.UserJwt;
 import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.JwtResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
-import com.nashtech.minhtran.gearshop.exception.EmailExistException;
-import com.nashtech.minhtran.gearshop.exception.InvalidEmailException;
-import com.nashtech.minhtran.gearshop.exception.InvalidPasswordException;
-import com.nashtech.minhtran.gearshop.exception.RetrieveUserException;
+import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.ERole;
 import com.nashtech.minhtran.gearshop.model.Role;
 import com.nashtech.minhtran.gearshop.model.User;
@@ -31,6 +29,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +56,7 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     ModelMapper mapper;
+
 
     @Override
     public JwtResponse login(@Valid LoginRequest loginRequest) throws Exception {
@@ -147,5 +147,46 @@ public class UserServiceImpl implements UserService {
         responseDTO.setTime(new Date());
         responseDTO.setObject(result);
         return responseDTO;
+    }
+
+    @Override
+    public ResponseDTO updateProfile(@Valid UpdateUserRequest updateUserRequest) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
+        if(user != null){
+            user.setPhoneNumber(updateUserRequest.getPhoneNumber());
+            user.setFirstName(updateUserRequest.getFirstName());
+            user.setLastName(updateUserRequest.getLastName());
+            user.setBirthday(updateUserRequest.getBirthday());
+            user.setGender(updateUserRequest.getGender());
+            userRepository.save(user);
+        } else {
+            throw new RuntimeException("User is not logged in or not existed");
+        }
+        return new ResponseDTO(SuccessCode.UPDATE_PROFILE_SUCCESS, true);
+    }
+
+
+    @Override
+    public ResponseDTO changePassword(String oldPassword, String newPassword) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
+        if (user != null){
+            if (!checkIfValidOldPassword(user, oldPassword)){
+                throw new InvalidOldPasswordException(ErrorCode.INVALID_OLD_PASSWORD);
+            }
+            if(Validation.checkValidPassword(newPassword)){
+                String hashPass = passwordEncoder.encode(newPassword);
+                user.setPassword(hashPass);
+                userRepository.save(user);
+            } else {
+                throw new InvalidPasswordException(ErrorCode.INVALID_PASSWORD_FORMAT);
+            }
+        } else {
+            throw new RuntimeException("User is not logged in or not existed");
+        }
+        return new ResponseDTO(SuccessCode.CHANGE_PASSWORD_SUCCESS, true);
+    }
+
+    private boolean checkIfValidOldPassword(User user, String oldPassword) {
+        return BCrypt.checkpw(oldPassword, user.getPassword());
     }
 }

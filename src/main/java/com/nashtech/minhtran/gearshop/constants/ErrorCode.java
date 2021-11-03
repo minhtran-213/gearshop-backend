@@ -34,4 +34,5 @@ public final class ErrorCode {
     public final static String ERROR_MANUFACTURER_EMPTY_NAME = "ERROR_MANUFACTURER_EMPTY_NAME";
 
     public static final String ERROR_RETRIEVE_USERS_ERROR = "ERROR_RETRIEVE_USERS_ERROR";
+    public final static String INVALID_OLD_PASSWORD = "INVALID_OLD_PASSWORD";
 }

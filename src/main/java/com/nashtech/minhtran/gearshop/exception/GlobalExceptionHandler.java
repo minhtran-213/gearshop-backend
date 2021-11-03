@@ -133,6 +133,12 @@ public class GlobalExceptionHandler {
         messageResponse = new ResponseDTO(new Date(), ErrorCode.ERROR_RETRIEVE_SINGLE_CATEGORY);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(messageResponse);
     }
+    @ExceptionHandler({InvalidOldPasswordException.class})
+    public ResponseEntity<ResponseDTO> handleRetrieveSingleCategory(InvalidOldPasswordException e){
+        logger.error(e.getMessage());
+        messageResponse = new ResponseDTO(new Date(), ErrorCode.INVALID_OLD_PASSWORD);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(messageResponse);
+    }
 
 
     @ExceptionHandler({Exception.class})

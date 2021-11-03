@@ -68,11 +68,12 @@ public class User {
     private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
     private Collection<Rate> rates;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    @JsonIgnore
+    private Collection<Address> addresses;
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Collection<Order> orders;
 
 }
