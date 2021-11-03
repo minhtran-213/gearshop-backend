@@ -28,5 +28,7 @@ public final class SuccessCode {
     public static final String RETRIEVE_USERS_SUCCESS = "RETRIEVE_USERS_SUCCESS";
     public static final String CHANGE_PASSWORD_SUCCESS = "CHANGE_PASSWORD_SUCCESS";
     public static final String UPDATE_PROFILE_SUCCESS = "UPDATE_PROFILE_SUCCESS";
+    public final static String SUCCESS_RETRIEVE_ADDRESS_FROM_USER = "SUCCESS_RETRIEVE_ADDRESS_FROM_USER";
 
+    public static final String ADD_ADDRESS_SUCCESS = "ADD_ADDRESS_SUCCESS";
 }

@@ -40,5 +40,4 @@ public class Address {
     @Column(name = "isDefaultAddress")
     private boolean isDefaultAddress;
 
-
 }

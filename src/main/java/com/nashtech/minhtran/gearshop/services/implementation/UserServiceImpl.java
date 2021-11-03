@@ -2,7 +2,9 @@ package com.nashtech.minhtran.gearshop.services.implementation;
 
 import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
+import com.nashtech.minhtran.gearshop.dto.AddressDTO;
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.response.UserJwt;
@@ -11,15 +13,18 @@ import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.JwtResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.exception.*;
+import com.nashtech.minhtran.gearshop.model.Address;
 import com.nashtech.minhtran.gearshop.model.ERole;
 import com.nashtech.minhtran.gearshop.model.Role;
 import com.nashtech.minhtran.gearshop.model.User;
+import com.nashtech.minhtran.gearshop.repo.AddressRepository;
 import com.nashtech.minhtran.gearshop.repo.RoleRepository;
 import com.nashtech.minhtran.gearshop.repo.UserRepository;
 import com.nashtech.minhtran.gearshop.security.jwt.JwtUtils;
 import com.nashtech.minhtran.gearshop.security.services.UserDetailsImpl;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import com.nashtech.minhtran.gearshop.util.Validation;
+import com.nashtech.minhtran.gearshop.util.converter.AddressConverter;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -57,6 +62,11 @@ public class UserServiceImpl implements UserService {
     @Autowired
     ModelMapper mapper;
 
+    @Autowired
+    AddressRepository addressRepository;
+
+    @Autowired
+    AddressConverter addressConverter;
 
     @Override
     public JwtResponse login(@Valid LoginRequest loginRequest) throws Exception {
@@ -184,6 +194,28 @@ public class UserServiceImpl implements UserService {
             throw new RuntimeException("User is not logged in or not existed");
         }
         return new ResponseDTO(SuccessCode.CHANGE_PASSWORD_SUCCESS, true);
+    }
+
+    @Override
+    public ResponseDTO getAddressFromUser(int id) {
+        User user = userRepository.findById(id).orElseThrow(()-> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+        List<AddressDTO> result = new ArrayList<>();
+        try {
+            List<Address> addresses = addressRepository.findByUser(user);
+            result = addressConverter.convertToDTOs(addresses);
+        } catch (Exception e){
+            throw new RetrieveAddressException(ErrorCode.RETRIEVE_ADDRESS_ERROR);
+        }
+        return new ResponseDTO(SuccessCode.SUCCESS_RETRIEVE_ADDRESS_FROM_USER, result);
+    }
+
+    @Override
+    public ResponseDTO addNewAddress(AddressRequestDTO addressRequestDTO) {
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+        Address address = mapper.map(addressRequestDTO, Address.class);
+        address.setUser(user);
+        addressRepository.save(address);
+        return new ResponseDTO(SuccessCode.ADD_ADDRESS_SUCCESS, true);
     }
 
     private boolean checkIfValidOldPassword(User user, String oldPassword) {

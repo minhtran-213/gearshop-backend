@@ -47,7 +47,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ResponseDTO> handleNotExistManufacturer(ManufacturerNotExistException e){
         logger.error(e.getMessage());
         messageResponse = new ResponseDTO(new Date(), ErrorCode.ERROR_MANUFACTURER_NOT_EXIST);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(messageResponse);
     }
 
     @ExceptionHandler({EmptyNameManufacturerException.class})
@@ -68,21 +68,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ResponseDTO> handleNotExistCategory(CategoryNotExistException e){
         logger.error(e.getMessage());
         messageResponse = new ResponseDTO(new Date(), ErrorCode.ERROR_CATEGORY_NOT_EXIST);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(messageResponse);
     }
 
     @ExceptionHandler({ProductNotExistException.class})
     public ResponseEntity<ResponseDTO> handleNotExistProduct(ProductNotExistException e){
         logger.error(e.getMessage());
         messageResponse = new ResponseDTO(new Date(), ErrorCode.ERROR_MANUFACTURER_NOT_EXIST);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(messageResponse);
     }
 
     @ExceptionHandler({ProductDetailNotExistException.class})
     public ResponseEntity<ResponseDTO> handleNotExistProductDetail(ProductDetailNotExistException e){
         logger.error(e.getMessage());
         messageResponse = new ResponseDTO(new Date(), ErrorCode.ERROR_PRODUCT_DETAIL_NOT_EXIST);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(messageResponse);
     }
 
     @ExceptionHandler({EmptyProductIdException.class})
@@ -134,12 +134,18 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(messageResponse);
     }
     @ExceptionHandler({InvalidOldPasswordException.class})
-    public ResponseEntity<ResponseDTO> handleRetrieveSingleCategory(InvalidOldPasswordException e){
+    public ResponseEntity<ResponseDTO> handleInvalidOldPassword(InvalidOldPasswordException e){
         logger.error(e.getMessage());
         messageResponse = new ResponseDTO(new Date(), ErrorCode.INVALID_OLD_PASSWORD);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR.value()).body(messageResponse);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST.value()).body(messageResponse);
     }
 
+    @ExceptionHandler({UserNotFoundException.class})
+    public ResponseEntity<ResponseDTO> handleUserNotFound(UserNotFoundException e){
+        logger.error(e.getMessage());
+        messageResponse = new ResponseDTO(new Date(), ErrorCode.ERROR_USER_NOT_FOUND);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(messageResponse);
+    }
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ResponseDTO> handleException(Exception e){
