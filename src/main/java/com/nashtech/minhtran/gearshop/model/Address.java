@@ -38,6 +38,6 @@ public class Address {
     private String ward;
 
     @Column(name = "isDefaultAddress")
-    private boolean isDefaultAddress;
+    private Boolean isDefaultAddress;
 
 }

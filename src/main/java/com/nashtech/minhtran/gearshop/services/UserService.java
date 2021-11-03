@@ -7,6 +7,7 @@ import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.JwtResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
+import com.nashtech.minhtran.gearshop.exception.AddressNotFoundException;
 
 import javax.validation.Valid;
 import java.util.Optional;
@@ -19,4 +20,5 @@ public interface UserService {
     ResponseDTO changePassword(String oldPassword, String newPassword);
     ResponseDTO getAddressFromUser(int id);
     ResponseDTO addNewAddress(AddressRequestDTO addressRequestDTO);
+    ResponseDTO updateAddress(int id, AddressRequestDTO addressRequestDTO) throws AddressNotFoundException;
 }

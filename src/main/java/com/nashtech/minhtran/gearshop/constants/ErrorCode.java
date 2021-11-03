@@ -38,5 +38,6 @@ public final class ErrorCode {
     public final static String ERROR_RETRIEVE_ADDRESS_FROM_USER = "ERROR_RETRIEVE_ADDRESS_FROM_USER";
     public final static String ERROR_USER_NOT_FOUND = "ERROR_USER_NOT_FOUND";
 
+    public static final String RETRIEVE_ADDRESSES_ERROR = "RETRIEVE_ADDRESSES_ERROR";
     public static final String RETRIEVE_ADDRESS_ERROR = "RETRIEVE_ADDRESS_ERROR";
 }

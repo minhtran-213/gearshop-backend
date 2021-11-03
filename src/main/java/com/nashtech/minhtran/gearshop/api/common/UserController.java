@@ -1,5 +1,6 @@
 package com.nashtech.minhtran.gearshop.api.common;
 
+import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.services.UserService;
@@ -40,6 +41,30 @@ public class UserController {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO responseDTO = userService.updateProfile(updateUserRequest);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (Exception e){
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+    @PostMapping("/address")
+    public ResponseEntity<ResponseDTO> addNewAddress(@Valid @RequestBody AddressRequestDTO addressRequestDTO){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO responseDTO = userService.addNewAddress(addressRequestDTO);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (Exception e){
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+    @PutMapping("/address/{id}")
+    public ResponseEntity<ResponseDTO> updateAddress(@PathVariable int id, @Valid @RequestBody AddressRequestDTO addressRequestDTO){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO responseDTO = userService.updateAddress(id, addressRequestDTO);
             response = ResponseEntity.ok().body(responseDTO);
         } catch (Exception e){
             logger.error(e.getMessage());

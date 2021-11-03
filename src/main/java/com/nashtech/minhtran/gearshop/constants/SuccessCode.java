@@ -31,4 +31,6 @@ public final class SuccessCode {
     public final static String SUCCESS_RETRIEVE_ADDRESS_FROM_USER = "SUCCESS_RETRIEVE_ADDRESS_FROM_USER";
 
     public static final String ADD_ADDRESS_SUCCESS = "ADD_ADDRESS_SUCCESS";
+    public static final String RETRIEVE_SINGLE_ADDRESS_SUCCESS = "RETRIEVE_SINGLE_ADDRESS_SUCCESS";
+    public static final String  UPDATE_ADDRESS_SUCCESSFUL = "UPDATE_ADDRESS_SUCCESSFUL";
 }

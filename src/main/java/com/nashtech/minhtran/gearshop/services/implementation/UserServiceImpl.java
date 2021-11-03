@@ -204,7 +204,7 @@ public class UserServiceImpl implements UserService {
             List<Address> addresses = addressRepository.findByUser(user);
             result = addressConverter.convertToDTOs(addresses);
         } catch (Exception e){
-            throw new RetrieveAddressException(ErrorCode.RETRIEVE_ADDRESS_ERROR);
+            throw new RetrieveAddressException(ErrorCode.RETRIEVE_ADDRESSES_ERROR);
         }
         return new ResponseDTO(SuccessCode.SUCCESS_RETRIEVE_ADDRESS_FROM_USER, result);
     }
@@ -216,6 +216,18 @@ public class UserServiceImpl implements UserService {
         address.setUser(user);
         addressRepository.save(address);
         return new ResponseDTO(SuccessCode.ADD_ADDRESS_SUCCESS, true);
+    }
+
+    @Override
+    public ResponseDTO updateAddress(int id, AddressRequestDTO addressRequestDTO) throws AddressNotFoundException {
+        Address address = addressRepository.findById(id).orElseThrow(() -> new AddressNotFoundException(ErrorCode.RETRIEVE_ADDRESS_ERROR));
+        address.setAddressName(addressRequestDTO.getAddressName());
+        address.setIsDefaultAddress(addressRequestDTO.getIsDefaultAddress());
+        address.setCity(addressRequestDTO.getCity());
+        address.setDistrict(addressRequestDTO.getDistrict());
+        address.setWard(addressRequestDTO.getWard());
+        addressRepository.save(address);
+        return new ResponseDTO(SuccessCode.UPDATE_ADDRESS_SUCCESSFUL, true);
     }
 
     private boolean checkIfValidOldPassword(User user, String oldPassword) {

@@ -21,5 +21,5 @@ public class AddressRequestDTO {
     private String district;
     @NotBlank
     private String ward;
-    private boolean isDefaultAddress;
+    private Boolean isDefaultAddress;
 }

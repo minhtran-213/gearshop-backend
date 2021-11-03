@@ -147,6 +147,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(messageResponse);
     }
 
+    @ExceptionHandler({AddressNotFoundException.class})
+    public ResponseEntity<ResponseDTO> handleAddressNotFound(AddressNotFoundException e){
+        logger.error(e.getMessage());
+        messageResponse = new ResponseDTO(new Date(), ErrorCode.RETRIEVE_ADDRESS_ERROR);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND.value()).body(messageResponse);
+    }
+
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ResponseDTO> handleException(Exception e){
         logger.error(e.getMessage());
