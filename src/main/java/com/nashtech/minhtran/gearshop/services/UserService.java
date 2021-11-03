@@ -1,5 +1,6 @@
 package com.nashtech.minhtran.gearshop.services;
 
+import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
@@ -16,4 +17,6 @@ public interface UserService {
     ResponseDTO getAllUser (Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction, Optional<String> firstName);
     ResponseDTO updateProfile (@Valid UpdateUserRequest updateUserRequest);
     ResponseDTO changePassword(String oldPassword, String newPassword);
+    ResponseDTO getAddressFromUser(int id);
+    ResponseDTO addNewAddress(AddressRequestDTO addressRequestDTO);
 }
