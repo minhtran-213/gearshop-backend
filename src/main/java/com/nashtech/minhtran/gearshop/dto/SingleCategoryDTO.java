@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 public class SingleCategoryDTO {
     private int id;
     private String name;
-    private int parentId;
+    private CategoryBasicDTO parentCategory;
 }

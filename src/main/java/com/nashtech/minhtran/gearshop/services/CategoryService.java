@@ -17,4 +17,6 @@ public interface CategoryService {
     ResponseDTO deleteCategory (int id);
     ResponseDTO getAllCategories() throws RetrieveCategoriesException;
     ResponseDTO getCategory(int id) throws RetrieveSingleCategoryException, CategoryNotExistException;
+    ResponseDTO getAllParentCategory(Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction) throws RetrieveCategoriesException;
+    ResponseDTO getAllCategoriesForAdmin() throws RetrieveCategoriesException;
 }

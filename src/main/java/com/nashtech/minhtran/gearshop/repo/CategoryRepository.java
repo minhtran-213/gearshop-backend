@@ -14,4 +14,7 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
 
     @Query("SELECT c FROM Category c WHERE c.category IS NULL")
     List<Category> findWhereParentIsNull();
+
+    @Query("SELECT c FROM Category c WHERE c.category IS NULL")
+    Page<Category> findWhereParentIsNullPaging(Pageable pageable);
 }

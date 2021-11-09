@@ -24,7 +24,7 @@ public class JwtUtils {
         UserDetailsImpl userPrinciple = (UserDetailsImpl) authentication.getPrincipal();
         return Jwts.builder().setSubject((userPrinciple.getUsername()))
                 .setIssuedAt(new Date()) // set start time of token
-                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs)) // set time expiration in milisecond
+                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs)) // set time expiration in millisecond
                 .signWith(SignatureAlgorithm.HS512, jwtSecret) // algorithm
                 .compact();
     }

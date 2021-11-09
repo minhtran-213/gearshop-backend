@@ -22,6 +22,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/admin")
 @SecurityRequirement(name = "minhtran")
+@CrossOrigin(origins = "*", maxAge = 30)
 public class CategoryControllerAdmin {
 
     @Autowired
@@ -55,6 +56,23 @@ public class CategoryControllerAdmin {
             ResponseDTO responseDTO = categoryService.getSubCategoriesByParentCategories(parentId);
             response = ResponseEntity.ok().body(responseDTO);
         } catch (CategoryNotExistException |RetrieveCategoriesException e){
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+    @GetMapping("/parent_category")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> getAllParentCategory(@RequestParam Optional<Integer> page,
+                                                            @RequestParam Optional<Integer> size,
+                                                            @RequestParam Optional<String> sort,
+                                                            @RequestParam Optional<String> direction
+                                                            ) {
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO responseDTO = categoryService.getAllParentCategory(page, size, sort, direction);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (RetrieveCategoriesException e) {
             logger.error(e.getMessage());
         }
         return response;
@@ -94,6 +112,19 @@ public class CategoryControllerAdmin {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = categoryService.deleteCategory(id);
+            response = ResponseEntity.ok().body(messageResponse);
+        } catch (CategoryNotExistException e){
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+    @GetMapping("/basicCategories")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> getAllCategories (){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO messageResponse = categoryService.getAllCategoriesForAdmin();
             response = ResponseEntity.ok().body(messageResponse);
         } catch (CategoryNotExistException e){
             logger.error(e.getMessage());

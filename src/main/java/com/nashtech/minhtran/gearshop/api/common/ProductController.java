@@ -20,6 +20,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/")
 @SecurityRequirement(name = "minhtran")
+@CrossOrigin(origins = "*", maxAge = 30)
 public class ProductController {
 
     @Autowired

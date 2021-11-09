@@ -1,8 +1,11 @@
 package com.nashtech.minhtran.gearshop.util.converter;
 
+import com.nashtech.minhtran.gearshop.dto.AdminProductDTO;
 import com.nashtech.minhtran.gearshop.dto.ProductDTO;
 import com.nashtech.minhtran.gearshop.dto.UserProductDTO;
 import com.nashtech.minhtran.gearshop.dto.UserProductDetailDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ProductDetailResponse;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ProductResponse;
 import com.nashtech.minhtran.gearshop.model.Product;
 import com.nashtech.minhtran.gearshop.model.ProductDetail;
 import org.modelmapper.ModelMapper;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -28,6 +32,26 @@ public class ProductConverter {
     public UserProductDTO convertToUserDTO (Product product){
         UserProductDTO productDTO = modelMapper.map(product, UserProductDTO.class);
         productDTO.setManufacturerName(product.getManufacturer().getName());
+        return productDTO;
+    }
+
+    public ProductResponse convertToResponse (Product product) {
+        ProductResponse productResponse = modelMapper.map(product, ProductResponse.class);
+        Collection<ProductDetail> productDetails = product.getProductDetails();
+        Collection<ProductDetailResponse> productDetailResponses = productDetails.stream()
+                .map(pd -> modelMapper.map(pd, ProductDetailResponse.class))
+                .collect(Collectors.toList());
+        productResponse.setProductDetail(productDetailResponses);
+        return productResponse;
+    }
+    public List<ProductResponse> convertToResponses (Page<Product> products){
+        return products.stream().map(this::convertToResponse).collect(Collectors.toList());
+    }
+
+    public AdminProductDTO convertToAdminDTO (Product product){
+        AdminProductDTO productDTO = modelMapper.map(product, AdminProductDTO.class);
+        productDTO.setCategoryId(product.getCategory().getId());
+        productDTO.setManufacturerId(product.getManufacturer().getId());
         return productDTO;
     }
 

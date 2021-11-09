@@ -24,6 +24,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/admin")
 @SecurityRequirement(name = "minhtran")
+@CrossOrigin(origins = "*", maxAge = 30)
 public class ProductControllerAdmin {
 
     @Autowired
@@ -134,6 +135,20 @@ public class ProductControllerAdmin {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.deleteProduct(id);
+            response = ResponseEntity.ok().body(messageResponse);
+        } catch (ProductNotExistException e){
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+
+    @GetMapping("/product/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> getProduct (@PathVariable int id){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO messageResponse = productService.getProductById(id);
             response = ResponseEntity.ok().body(messageResponse);
         } catch (ProductNotExistException e){
             logger.error(e.getMessage());

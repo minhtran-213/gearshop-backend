@@ -6,12 +6,9 @@ import com.nashtech.minhtran.gearshop.dto.AddressDTO;
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.response.UserJwt;
+import com.nashtech.minhtran.gearshop.dto.payload.response.*;
 import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.response.JwtResponse;
-import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
 import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.Address;
 import com.nashtech.minhtran.gearshop.model.ERole;
@@ -99,6 +96,7 @@ public class UserServiceImpl implements UserService {
         }
         String newPassword = passwordEncoder.encode(signupRequest.getPassword());
         User user = User.builder()
+                .id(0)
                 .email(signupRequest.getEmail())
                 .password(newPassword)
                 .firstName(signupRequest.getFirst_name())
@@ -153,16 +151,22 @@ public class UserServiceImpl implements UserService {
             }
         }
 
+        PageResponse response = PageResponse.builder()
+                .totalPages(users.getTotalPages())
+                .totalElements(users.getTotalElements())
+                .content(result.getContent())
+                .currentPage(users.getNumber()).build();
+
         responseDTO.setSuccessCode(SuccessCode.RETRIEVE_USERS_SUCCESS);
         responseDTO.setTime(new Date());
-        responseDTO.setObject(result);
+        responseDTO.setObject(response);
         return responseDTO;
     }
 
     @Override
     public ResponseDTO updateProfile(@Valid UpdateUserRequest updateUserRequest) {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
-        if(user != null){
+        if (user != null) {
             user.setPhoneNumber(updateUserRequest.getPhoneNumber());
             user.setFirstName(updateUserRequest.getFirstName());
             user.setLastName(updateUserRequest.getLastName());
@@ -179,11 +183,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResponseDTO changePassword(String oldPassword, String newPassword) {
         User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
-        if (user != null){
-            if (!checkIfValidOldPassword(user, oldPassword)){
+        if (user != null) {
+            if (!checkIfValidOldPassword(user, oldPassword)) {
                 throw new InvalidOldPasswordException(ErrorCode.INVALID_OLD_PASSWORD);
             }
-            if(Validation.checkValidPassword(newPassword)){
+            if (Validation.checkValidPassword(newPassword)) {
                 String hashPass = passwordEncoder.encode(newPassword);
                 user.setPassword(hashPass);
                 userRepository.save(user);
@@ -198,12 +202,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDTO getAddressFromUser(int id) {
-        User user = userRepository.findById(id).orElseThrow(()-> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
         List<AddressDTO> result = new ArrayList<>();
         try {
             List<Address> addresses = addressRepository.findByUser(user);
             result = addressConverter.convertToDTOs(addresses);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RetrieveAddressException(ErrorCode.RETRIEVE_ADDRESSES_ERROR);
         }
         return new ResponseDTO(SuccessCode.SUCCESS_RETRIEVE_ADDRESS_FROM_USER, result);
@@ -211,7 +215,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDTO addNewAddress(AddressRequestDTO addressRequestDTO) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(()-> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
         Address address = mapper.map(addressRequestDTO, Address.class);
         address.setUser(user);
         addressRepository.save(address);

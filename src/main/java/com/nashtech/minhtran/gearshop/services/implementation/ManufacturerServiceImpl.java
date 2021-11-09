@@ -3,6 +3,7 @@ package com.nashtech.minhtran.gearshop.services.implementation;
 import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
 import com.nashtech.minhtran.gearshop.dto.ManufacturerDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.response.PageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.EmptyBodyException;
 import com.nashtech.minhtran.gearshop.exception.EmptyNameManufacturerException;
@@ -62,14 +63,20 @@ public class ManufacturerServiceImpl implements ManufacturerService {
                 throw new RetrieveManufacturerException(ErrorCode.ERROR_RETRIEVE_MANUFACTURERS);
             }
         }
+        PageResponse response = PageResponse.builder()
+                .totalPages(manufacturers.getTotalPages())
+                .totalElements(manufacturers.getTotalElements())
+                .currentPage(manufacturers.getNumber())
+                .content(manufacturers.getContent())
+                .build();
         responseDTO.setTime(new Date());
-        responseDTO.setObject(manufacturers);
+        responseDTO.setObject(response);
         responseDTO.setSuccessCode(SuccessCode.RETRIEVE_MANUFACTURERS_SUCCESS);
         return responseDTO;
     }
 
     @Override
-    public ResponseDTO addNewManufacturer(@Valid ManufacturerDTO manufacturerDTO) throws EmptyBodyException, EmptyNameManufacturerException{
+    public ResponseDTO addNewManufacturer(@Valid ManufacturerDTO manufacturerDTO) throws EmptyBodyException, EmptyNameManufacturerException {
         ResponseDTO responseDTO = new ResponseDTO();
         if (manufacturerDTO == null) {
             throw new EmptyBodyException(ErrorCode.EMPTY_BODY);
@@ -77,7 +84,7 @@ public class ManufacturerServiceImpl implements ManufacturerService {
             throw new EmptyNameManufacturerException(ErrorCode.ERROR_MANUFACTURER_EMPTY_NAME);
         } else {
             Manufacturer manufacturer = mapper.map(manufacturerDTO, Manufacturer.class);
-            manufacturer.setId(0);
+            manufacturer.setId(-1);
             manufacturerRepository.save(manufacturer);
         }
         responseDTO.setTime(new Date());
@@ -126,10 +133,10 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         List<Manufacturer> manufacturers;
         try {
             manufacturers = manufacturerRepository.findAll(Sort.by("name"));
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RetrieveManufacturerException(ErrorCode.ERROR_RETRIEVE_MANUFACTURERS);
         }
-        return new  ResponseDTO(SuccessCode.RETRIEVE_MANUFACTURERS_SUCCESS, manufacturers);
+        return new ResponseDTO(SuccessCode.RETRIEVE_MANUFACTURERS_SUCCESS, manufacturers);
     }
 
     @Override

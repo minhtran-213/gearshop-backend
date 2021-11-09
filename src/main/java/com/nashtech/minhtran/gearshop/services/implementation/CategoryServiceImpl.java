@@ -6,6 +6,7 @@ import com.nashtech.minhtran.gearshop.dto.CategoryBasicDTO;
 import com.nashtech.minhtran.gearshop.dto.CategoryDTO;
 import com.nashtech.minhtran.gearshop.dto.SingleCategoryDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.CategoryRequest;
+import com.nashtech.minhtran.gearshop.dto.payload.response.PageResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.Category;
@@ -69,7 +70,12 @@ public class CategoryServiceImpl implements CategoryService {
                 throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
             }
         }
-        responseDTO.setObject(result);
+        PageResponse response = PageResponse.builder()
+                .content(result.getContent())
+                .totalElements(categories.getTotalElements())
+                .totalPages(categories.getTotalPages())
+                .currentPage(categories.getNumber()).build();
+        responseDTO.setObject(response);
         responseDTO.setTime(new Date());
         responseDTO.setSuccessCode(SuccessCode.RETRIEVE_CATEGORIES_SUCCESS);
         return responseDTO;
@@ -108,8 +114,9 @@ public class CategoryServiceImpl implements CategoryService {
             if (parentCategory != null) {
                 Category category = Category.builder()
                         .name(categoryRequest.getName())
-                        .category(parentCategory)
-                        .id(0).build();
+                        .category(parentCategory).build();
+                category.setId(-1);
+                System.out.println(category.getId()+ " " + category.getName());
                 categoryRepository.save(category);
             } else {
                 throw new CategoryNotExistException(ErrorCode.ERROR_CATEGORY_EMPTY_NAME);
@@ -190,9 +197,48 @@ public class CategoryServiceImpl implements CategoryService {
         try {
             Category category = categoryRepository.findById(id).orElseThrow(() -> new CategoryNotExistException(ErrorCode.ERROR_CATEGORY_NOT_EXIST));
             categoryDTO = categoryConverter.convertEntityToSingleDTO(category);
-        } catch (Exception e){
+        } catch (Exception e) {
             throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_SINGLE_CATEGORY);
         }
         return new ResponseDTO(SuccessCode.RETRIEVE_SINGLE_CATEGORY_SUCCESS, categoryDTO);
+    }
+
+    @Override
+    public ResponseDTO getAllParentCategory(Optional<Integer> page, Optional<Integer> size, Optional<String> sort, Optional<String> direction) throws RetrieveCategoriesException {
+        Page<CategoryBasicDTO> result;
+        Page<Category> categories;
+        Sort.Direction sortDirection = Sort.Direction.ASC;
+        if (direction.isPresent()) {
+            if (direction.get().equalsIgnoreCase("desc")) {
+                sortDirection = Sort.Direction.DESC;
+            }
+        }
+        Pageable pageable = PageRequest
+                .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
+        try {
+            categories = categoryRepository.findWhereParentIsNullPaging(pageable);
+            List<CategoryBasicDTO> list = categoryConverter.convertCategoriesToBasicDTOs(categories);
+            result = new PageImpl<>(list, pageable, list.size());
+        } catch (Exception e){
+            throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
+        }
+        PageResponse response = PageResponse.builder()
+                .content(result.getContent())
+                .totalElements(categories.getTotalElements())
+                .totalPages(categories.getTotalPages())
+                .currentPage(categories.getNumber()).build();
+        return new ResponseDTO(SuccessCode.RETRIEVE_CATEGORIES_SUCCESS, response);
+    }
+
+    @Override
+    public ResponseDTO getAllCategoriesForAdmin() throws RetrieveCategoriesException {
+        List<CategoryBasicDTO> result;
+        try {
+            List<Category> categories = categoryRepository.findAll();
+            result = categoryConverter.convertCategoriesToBasicDTOs(categories);
+        } catch (Exception e) {
+            throw new RetrieveCategoriesException(ErrorCode.ERROR_RETRIEVE_CATEGORIES);
+        }
+        return new ResponseDTO(SuccessCode.RETRIEVE_CATEGORIES_SUCCESS, result);
     }
 }

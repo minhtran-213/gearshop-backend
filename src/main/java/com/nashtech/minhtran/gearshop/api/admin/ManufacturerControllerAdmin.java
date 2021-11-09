@@ -17,6 +17,7 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/v1/admin")
 @SecurityRequirement(name = "minhtran")
+@CrossOrigin(origins = "*", maxAge = 30)
 public class ManufacturerControllerAdmin {
 
     @Autowired

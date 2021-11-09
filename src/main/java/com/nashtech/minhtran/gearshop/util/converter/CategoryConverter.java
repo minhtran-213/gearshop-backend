@@ -34,9 +34,10 @@ public class CategoryConverter {
     public SingleCategoryDTO convertEntityToSingleDTO(Category category) {
         SingleCategoryDTO categoryDTO = modelMapper.map(category, SingleCategoryDTO.class);
         if (category.getCategory() != null) {
-            categoryDTO.setParentId(category.getCategory().getId());
+            CategoryBasicDTO categoryBasicDTO = modelMapper.map(category.getCategory(), CategoryBasicDTO.class);
+            categoryDTO.setParentCategory(categoryBasicDTO);
         } else {
-            categoryDTO.setParentId(0);
+            categoryDTO.setParentCategory(null);
         }
         return categoryDTO;
     }
