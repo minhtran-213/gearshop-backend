@@ -264,7 +264,7 @@ public class ProductServiceImpl implements ProductService {
             }
         }
         Pageable pageable = PageRequest
-                .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
+                .of(page.orElse(0), size.orElse(8), sortDirection, sort.orElse("id"));
         Page<Product> products;
         Page<ProductResponse> result;
         if (name.isPresent()) {
@@ -351,7 +351,7 @@ public class ProductServiceImpl implements ProductService {
                 }
             }
             Pageable pageable = PageRequest
-                    .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
+                    .of(page.orElse(0), size.orElse(8), sortDirection, sort.orElse("id"));
             try {
                 Page<Product> products = productRepository.findByCategory(category, pageable);
                 List<ProductResponse> list = productConverter.convertToResponses(products);
