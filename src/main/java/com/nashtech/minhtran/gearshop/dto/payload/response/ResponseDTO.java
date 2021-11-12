@@ -15,8 +15,8 @@ public class ResponseDTO {
     private String successCode;
     private Object object;
 
-    public ResponseDTO(Date time, String errorCode) {
-        this.time = time;
+    public ResponseDTO(String errorCode) {
+        this.time = new Date();
         this.errorCode = errorCode;
     }
 

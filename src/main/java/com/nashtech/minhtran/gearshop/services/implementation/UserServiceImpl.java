@@ -22,15 +22,21 @@ import com.nashtech.minhtran.gearshop.security.services.UserDetailsImpl;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import com.nashtech.minhtran.gearshop.util.Validation;
 import com.nashtech.minhtran.gearshop.util.converter.AddressConverter;
+import com.nashtech.minhtran.gearshop.util.converter.UserConverter;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -65,55 +71,89 @@ public class UserServiceImpl implements UserService {
     @Autowired
     AddressConverter addressConverter;
 
+    @Autowired
+    UserConverter userConverter;
+
+    Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);
+
     @Override
-    public JwtResponse login(@Valid LoginRequest loginRequest) throws Exception {
-        Authentication authentication = authenticationManager.
-                authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        User user = userRepository.findById(userDetails.getId()).orElse(null);
-        List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
-        if (user != null) {
-            UserJwt userJwt = UserJwt.builder()
-                    .email(user.getEmail())
-                    .first_name(user.getFirstName())
-                    .last_name(user.getLastName())
-                    .id(user.getId())
-                    .build();
-            return new JwtResponse(jwt, userJwt, roles);
+    public ResponseDTO login(@Valid LoginRequest loginRequest) throws BadCredentialsException {
+        try {
+            Authentication authentication = authenticationManager.
+                    authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            String jwt = jwtUtils.generateJwtToken(authentication);
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+            User user = userRepository.findById(userDetails.getId()).orElseThrow(() -> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+            List<String> roles = userDetails.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+            if (user != null) {
+                UserJwt userJwt = UserJwt.builder()
+                        .email(user.getEmail())
+                        .first_name(user.getFirstName())
+                        .last_name(user.getLastName())
+                        .id(user.getId())
+                        .build();
+                JwtResponse jwtResponse = new JwtResponse(jwt, userJwt, roles);
+                return new ResponseDTO(SuccessCode.LOGIN_SUCCESSFUL, jwtResponse);
+            } else {
+                // back end exception
+                throw new UserNotFoundException("User not found!");
+            }
+        } catch (BadCredentialsException e) {
+            logger.error(e.getMessage());
+            throw new BadCredentialsException(ErrorCode.WRONG_USERNAME_OR_PASSWORD);
+        } catch (UserNotFoundException e) {
+            logger.error(e.getMessage());
         }
+
         return null;
     }
 
     @Override
-    public MessageResponse signup(@Valid SignupRequest signupRequest) throws InvalidPasswordException, InvalidEmailException, EmailExistException {
-        if (!Validation.checkValidEmail(signupRequest.getEmail())) {
-            throw new InvalidEmailException("Email is invalid");
+    public ResponseDTO signup(@Valid SignupRequest signupRequest) throws InvalidPasswordException, InvalidEmailException, EmailExistException {
+        try {
+            if (!Validation.checkValidEmail(signupRequest.getEmail())) {
+                throw new InvalidEmailException("Email is invalid");
+            }
+
+            if (!Validation.checkValidPassword(signupRequest.getPassword())) {
+                throw new InvalidPasswordException("Password is invalid");
+            }
+            if (userRepository.existsByEmail(signupRequest.getEmail())) {
+                throw new EmailExistException("Email has taken");
+            }
+            String newPassword = passwordEncoder.encode(signupRequest.getPassword());
+            User user = User.builder()
+                    .id(0)
+                    .email(signupRequest.getEmail())
+                    .password(newPassword)
+                    .firstName(signupRequest.getFirst_name())
+                    .lastName(signupRequest.getLast_name())
+                    .dateCreated(new Date())
+                    .gender(signupRequest.getGender())
+                    .build();
+
+            Set<Role> roles = new HashSet<>();
+
+            Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("No role found"));
+            roles.add(userRole);
+
+            user.setRoles(roles);
+
+            userRepository.save(user);
+
+            return new ResponseDTO("User registered successful", true);
+        } catch (InvalidPasswordException e) {
+            logger.error(e.getMessage());
+            throw new InvalidPasswordException(ErrorCode.INVALID_PASSWORD_FORMAT);
+        } catch (InvalidEmailException e) {
+            logger.error(e.getMessage());
+            throw new InvalidEmailException(ErrorCode.INVALID_EMAIL_FORMAT);
+        } catch (EmailExistException e) {
+            logger.error(e.getMessage());
+            throw new EmailExistException(ErrorCode.EXIST_EMAIL);
         }
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
-            throw new EmailExistException("Email has taken");
-        }
-        String newPassword = passwordEncoder.encode(signupRequest.getPassword());
-        User user = User.builder()
-                .id(0)
-                .email(signupRequest.getEmail())
-                .password(newPassword)
-                .firstName(signupRequest.getFirst_name())
-                .lastName(signupRequest.getLast_name())
-                .dateCreated(new Date())
-                .gender(signupRequest.getGender())
-                .build();
 
-        Set<Role> roles = new HashSet<>();
-
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER).orElseThrow(() -> new RuntimeException("No role found"));
-        roles.add(userRole);
-
-        user.setRoles(roles);
-
-        userRepository.save(user);
-        return new MessageResponse("User registered successful", HttpStatus.OK.value());
     }
 
     @Override
@@ -121,7 +161,7 @@ public class UserServiceImpl implements UserService {
                                   Optional<Integer> size,
                                   Optional<String> sort,
                                   Optional<String> direction,
-                                  Optional<String> firstName) throws RetrieveUserException {
+                                  Optional<String> firstName) throws RetrieveUserException, ConvertDTOException {
         ResponseDTO responseDTO = new ResponseDTO();
         Sort.Direction sortDirection = Sort.Direction.ASC;
         if (direction.isPresent()) {
@@ -131,22 +171,39 @@ public class UserServiceImpl implements UserService {
         }
 
         Pageable pageable = PageRequest.of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
-        Page<User> users;
-        Page<UserDTO> result;
+        Page<User> users = new PageImpl<>(new ArrayList<>());
+        Page<UserDTO> result = new PageImpl<>(new ArrayList<>());
         if (firstName.isPresent()) {
             try {
                 users = userRepository.findByFirstName(firstName.get(), pageable);
-                List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
-                result = new PageImpl<>(userList, pageable, userList.size());
-            } catch (Exception e) {
+                try {
+                    List<UserDTO> userList = userConverter.convertToListUserDTO(users);
+                    result = new PageImpl<>(userList, pageable, userList.size());
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (ConvertDTOException e) {
+                logger.error(e.getMessage());
+                throw new ConvertDTOException();
+            } catch (RetrieveUserException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveUserException(ErrorCode.ERROR_RETRIEVE_USERS_ERROR);
             }
         } else {
             try {
                 users = userRepository.findAll(pageable);
-                List<UserDTO> userList = users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
-                result = new PageImpl<>(userList, pageable, userList.size());
-            } catch (Exception e) {
+                try {
+                    List<UserDTO> userList = userConverter.convertToListUserDTO(users);
+                    result = new PageImpl<>(userList, pageable, userList.size());
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (ConvertDTOException e) {
+                logger.error(e.getMessage());
+            } catch (RetrieveUserException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveUserException(ErrorCode.ERROR_RETRIEVE_USERS_ERROR);
             }
         }
@@ -164,19 +221,28 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseDTO updateProfile(@Valid UpdateUserRequest updateUserRequest) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
-        if (user != null) {
-            user.setPhoneNumber(updateUserRequest.getPhoneNumber());
-            user.setFirstName(updateUserRequest.getFirstName());
-            user.setLastName(updateUserRequest.getLastName());
-            user.setBirthday(updateUserRequest.getBirthday());
-            user.setGender(updateUserRequest.getGender());
-            userRepository.save(user);
-        } else {
-            throw new RuntimeException("User is not logged in or not existed");
+    public ResponseDTO updateProfile(@Valid UpdateUserRequest updateUserRequest) throws AccessDeniedException {
+        try {
+            User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
+            if (user != null) {
+                user.setPhoneNumber(updateUserRequest.getPhoneNumber());
+                user.setFirstName(updateUserRequest.getFirstName());
+                user.setLastName(updateUserRequest.getLastName());
+                user.setBirthday(updateUserRequest.getBirthday());
+                user.setGender(updateUserRequest.getGender());
+                try {
+                    userRepository.save(user);
+                } catch (SaveUserException e) {
+                    throw new SaveUserException();
+                }
+            } else {
+                throw new AccessDeniedException("User is not logged in or not existed");
+            }
+            return new ResponseDTO(SuccessCode.UPDATE_PROFILE_SUCCESS, true);
+        } catch (AccessDeniedException e) {
+            logger.error(e.getMessage());
+            throw new AccessDeniedException("Unauthorized");
         }
-        return new ResponseDTO(SuccessCode.UPDATE_PROFILE_SUCCESS, true);
     }
 
 
@@ -190,12 +256,19 @@ public class UserServiceImpl implements UserService {
             if (Validation.checkValidPassword(newPassword)) {
                 String hashPass = passwordEncoder.encode(newPassword);
                 user.setPassword(hashPass);
-                userRepository.save(user);
+                try {
+                    userRepository.save(user);
+                } catch (SaveUserException e) {
+                    logger.error(e.getMessage());
+                    throw new SaveUserException();
+                }
             } else {
+                logger.error(ErrorCode.INVALID_PASSWORD_FORMAT);
                 throw new InvalidPasswordException(ErrorCode.INVALID_PASSWORD_FORMAT);
             }
         } else {
-            throw new RuntimeException("User is not logged in or not existed");
+            logger.error("User is not logged in or not existed");
+            throw new AccessDeniedException("User is not logged in or not existed");
         }
         return new ResponseDTO(SuccessCode.CHANGE_PASSWORD_SUCCESS, true);
     }
@@ -208,6 +281,7 @@ public class UserServiceImpl implements UserService {
             List<Address> addresses = addressRepository.findByUser(user);
             result = addressConverter.convertToDTOs(addresses);
         } catch (Exception e) {
+            logger.error(e.getMessage());
             throw new RetrieveAddressException(ErrorCode.RETRIEVE_ADDRESSES_ERROR);
         }
         return new ResponseDTO(SuccessCode.SUCCESS_RETRIEVE_ADDRESS_FROM_USER, result);
@@ -215,11 +289,22 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public ResponseDTO addNewAddress(AddressRequestDTO addressRequestDTO) {
-        User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
-        Address address = mapper.map(addressRequestDTO, Address.class);
-        address.setUser(user);
-        addressRepository.save(address);
-        return new ResponseDTO(SuccessCode.ADD_ADDRESS_SUCCESS, true);
+        try {
+            User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElseThrow(() -> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+            Address address = mapper.map(addressRequestDTO, Address.class);
+            address.setUser(user);
+            try {
+                addressRepository.save(address);
+            } catch (SaveAddressException e) {
+                logger.error(e.getMessage());
+                throw new SaveAddressException(ErrorCode.SAVE_ADDRESS_FAIL);
+            }
+            return new ResponseDTO(SuccessCode.ADD_ADDRESS_SUCCESS, true);
+        } catch (AccessDeniedException e) {
+            logger.error(e.getMessage());
+            throw new AccessDeniedException(ErrorCode.FORBIDDEN);
+        }
+
     }
 
     @Override
@@ -230,7 +315,12 @@ public class UserServiceImpl implements UserService {
         address.setCity(addressRequestDTO.getCity());
         address.setDistrict(addressRequestDTO.getDistrict());
         address.setWard(addressRequestDTO.getWard());
-        addressRepository.save(address);
+        try {
+            addressRepository.save(address);
+        } catch (SaveAddressException e) {
+            logger.error(e.getMessage());
+            throw new SaveAddressException(e.getMessage());
+        }
         return new ResponseDTO(SuccessCode.UPDATE_ADDRESS_SUCCESSFUL, true);
     }
 

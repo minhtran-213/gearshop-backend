@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/")
+@RequestMapping("/api/v1/common")
 @SecurityRequirement(name = "minhtran")
 @CrossOrigin(origins = "*", maxAge = 30)
 public class CategoryController {
@@ -44,6 +44,7 @@ public class CategoryController {
             response = ResponseEntity.ok().body(result);
         } catch (CategoryNotExistException | RetrieveSingleCategoryException e) {
             logger.error(e.getMessage());
+            throw new CategoryNotExistException(e.getMessage());
         }
         return response;
     }

@@ -4,9 +4,8 @@ import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.JwtResponse;
 import com.nashtech.minhtran.gearshop.dto.payload.response.MessageResponse;
-import com.nashtech.minhtran.gearshop.exception.EmailExistException;
-import com.nashtech.minhtran.gearshop.exception.InvalidEmailException;
-import com.nashtech.minhtran.gearshop.exception.InvalidPasswordException;
+import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
+import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -18,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -40,18 +40,16 @@ public class AuthController {
                             schema = @Schema(implementation = JwtResponse.class))}),
             @ApiResponse(responseCode = "401", description = "unauthorized", content = @Content)
     })
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        JwtResponse jwtResponse = null;
+    public ResponseEntity<ResponseDTO> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            jwtResponse = userService.login(loginRequest);
-        } catch (Exception e) {
+            ResponseDTO responseDTO = userService.login(loginRequest);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (BadCredentialsException e) {
             logger.error(e.getMessage());
+           throw new BadCredentialsException(e.getMessage());
         }
-        if (jwtResponse != null) {
-            return ResponseEntity.status(HttpStatus.OK).body(jwtResponse);
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Can't find user");
-        }
+        return response;
     }
 
     @PostMapping("/signup")
@@ -62,19 +60,20 @@ public class AuthController {
                             schema = @Schema(implementation = MessageResponse.class))}),
             @ApiResponse(responseCode = "400", description = "bad request" ,content = @Content)
     })
-    public ResponseEntity<?> signUp(@Valid @RequestBody SignupRequest signupRequest) {
+    public ResponseEntity<ResponseDTO> signUp(@Valid @RequestBody SignupRequest signupRequest) {
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            MessageResponse messageResponse = userService.signup(signupRequest);
+            ResponseDTO messageResponse = userService.signup(signupRequest);
             return ResponseEntity.ok().body(messageResponse);
         } catch (InvalidEmailException emailException) {
             logger.error(emailException.getMessage());
-            throw new InvalidEmailException();
+            throw new InvalidEmailException(emailException.getMessage());
         } catch (EmailExistException emailExistException) {
             logger.error(emailExistException.getMessage());
-            throw new EmailExistException();
+            throw new EmailExistException(emailExistException.getMessage());
         } catch (InvalidPasswordException passwordException) {
             logger.error(passwordException.getMessage());
-            throw new InvalidPasswordException();
+            throw new InvalidPasswordException(passwordException.getMessage());
         }
     }
 }

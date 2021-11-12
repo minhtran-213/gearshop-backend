@@ -2,6 +2,7 @@ package com.nashtech.minhtran.gearshop.util.converter;
 
 import com.nashtech.minhtran.gearshop.dto.AddressDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
+import com.nashtech.minhtran.gearshop.exception.ConvertDTOException;
 import com.nashtech.minhtran.gearshop.model.Address;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,7 @@ public class AddressConverter {
     ModelMapper modelMapper;
 
 
-    public List<AddressDTO> convertToDTOs (List<Address> addresses){
+    public List<AddressDTO> convertToDTOs (List<Address> addresses) throws ConvertDTOException {
         return addresses.stream().map(address -> modelMapper.map(address, AddressDTO.class)).collect(Collectors.toList());
     }
 }

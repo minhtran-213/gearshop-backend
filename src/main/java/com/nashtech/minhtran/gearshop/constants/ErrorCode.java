@@ -40,4 +40,10 @@ public final class ErrorCode {
 
     public static final String RETRIEVE_ADDRESSES_ERROR = "RETRIEVE_ADDRESSES_ERROR";
     public static final String RETRIEVE_ADDRESS_ERROR = "RETRIEVE_ADDRESS_ERROR";
+    public static final String FORBIDDEN = "FORBIDDEN";
+    public static final String WRONG_USERNAME_OR_PASSWORD = "WRONG_USERNAME_OR_PASSWORD";
+    public static final String SAVE_USER_FAIL = "SAVE_USER_FAIL";
+    public static final String SAVE_ADDRESS_FAIL = "SAVE_USER_FAIL";
+
+
 }

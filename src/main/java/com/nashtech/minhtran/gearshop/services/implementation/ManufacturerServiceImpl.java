@@ -53,13 +53,13 @@ public class ManufacturerServiceImpl implements ManufacturerService {
         if (name.isPresent()) {
             try {
                 manufacturers = manufacturerRepository.findByName(name.get(), pageable);
-            } catch (Exception e) {
+            } catch (RetrieveManufacturerException e) {
                 throw new RetrieveManufacturerException(ErrorCode.ERROR_RETRIEVE_MANUFACTURERS);
             }
         } else {
             try {
                 manufacturers = manufacturerRepository.findAll(pageable);
-            } catch (Exception e) {
+            } catch (RetrieveManufacturerException e) {
                 throw new RetrieveManufacturerException(ErrorCode.ERROR_RETRIEVE_MANUFACTURERS);
             }
         }

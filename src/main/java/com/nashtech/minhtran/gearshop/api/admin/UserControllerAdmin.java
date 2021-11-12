@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,8 +43,9 @@ public class UserControllerAdmin {
         try {
             ResponseDTO result = userService.getAllUser(page, size, sort, direction, firstName);
             response = ResponseEntity.ok().body(result);
-        } catch (Exception e){
+        } catch (AccessDeniedException e){
             logger.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
         }
 
         return response;
@@ -56,7 +58,7 @@ public class UserControllerAdmin {
         try {
             ResponseDTO responseDTO = userService.getAddressFromUser(id);
             response = ResponseEntity.ok().body(responseDTO);
-        } catch (Exception e){
+        } catch (AccessDeniedException e){
             logger.error(e.getMessage());
         }
         return response;

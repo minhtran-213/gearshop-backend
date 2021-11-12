@@ -33,4 +33,6 @@ public final class SuccessCode {
     public static final String ADD_ADDRESS_SUCCESS = "ADD_ADDRESS_SUCCESS";
     public static final String RETRIEVE_SINGLE_ADDRESS_SUCCESS = "RETRIEVE_SINGLE_ADDRESS_SUCCESS";
     public static final String  UPDATE_ADDRESS_SUCCESSFUL = "UPDATE_ADDRESS_SUCCESSFUL";
+    public static final String  LOGIN_SUCCESSFUL = "LOGIN_SUCCESSFUL";
+
 }

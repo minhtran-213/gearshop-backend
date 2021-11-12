@@ -21,6 +21,8 @@ import com.nashtech.minhtran.gearshop.repo.ProductRepository;
 import com.nashtech.minhtran.gearshop.services.ProductService;
 import com.nashtech.minhtran.gearshop.util.converter.ProductConverter;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
@@ -53,6 +55,9 @@ public class ProductServiceImpl implements ProductService {
     @Autowired
     ProductConverter productConverter;
 
+    Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
+
     @Override
     public ResponseDTO getAllProductDetailByProduct(Optional<Integer> productId) throws RetrieveProductDetailException, ProductNotExistException {
         ResponseDTO responseDTO = new ResponseDTO();
@@ -60,21 +65,29 @@ public class ProductServiceImpl implements ProductService {
         if (productId.isPresent()) {
             try {
                 Product product = productRepository.findById(productId.get())
-                        .orElseThrow(ProductNotExistException::new);
+                        .orElseThrow(() -> new ProductNotExistException(ErrorCode.ERROR_PRODUCT_NOT_EXIST));
                 List<ProductDetail> productDetails = productDetailRepository.findByProduct(product);
-                result = productDetails.stream()
-                        .map(productDetail -> mapper.map(productDetail, BasicProductDetailDTO.class))
-                        .collect(Collectors.toList());
-            } catch (Exception e) {
+                try {
+                    result = productConverter.convertToBasicProductDetailDTO(productDetails);
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (RetrieveProductDetailException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
             }
         } else {
             try {
                 List<ProductDetail> productDetails = productDetailRepository.findAll();
-                result = productDetails.stream()
-                        .map(productDetail -> mapper.map(productDetail, BasicProductDetailDTO.class))
-                        .collect(Collectors.toList());
-            } catch (Exception e) {
+                try {
+                    result = productConverter.convertToBasicProductDetailDTO(productDetails);
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (RetrieveProductDetailException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
             }
         }
@@ -89,6 +102,7 @@ public class ProductServiceImpl implements ProductService {
     public ResponseDTO addNewProductDetail(@Valid ProductDetailRequest productDetailRequest) throws EmptyProductIdException, ProductNotExistException {
         ResponseDTO responseDTO = new ResponseDTO();
         if (productDetailRequest.getProductId() == 0) {
+            logger.error(ErrorCode.ERROR_PRODUCT_ID_EMPTY);
             throw new EmptyProductIdException(ErrorCode.ERROR_PRODUCT_ID_EMPTY);
         }
         Product product = productRepository.findById(productDetailRequest.getProductId()).orElseThrow(ProductNotExistException::new);
@@ -100,11 +114,16 @@ public class ProductServiceImpl implements ProductService {
                 .size(productDetailRequest.getSize())
                 .price(productDetailRequest.getPrice())
                 .quantity(productDetailRequest.getQuantity()).build();
-        productDetailRepository.save(productDetail);
-        responseDTO.setSuccessCode(SuccessCode.ADD_PRODUCT_DETAILS_SUCCESS);
-        responseDTO.setObject(true);
-        responseDTO.setTime(new Date());
-        return responseDTO;
+        try {
+            productDetailRepository.save(productDetail);
+            responseDTO.setSuccessCode(SuccessCode.ADD_PRODUCT_DETAILS_SUCCESS);
+            responseDTO.setObject(true);
+            responseDTO.setTime(new Date());
+            return responseDTO;
+        } catch (SaveProductException e) {
+            logger.error(e.getMessage());
+            throw new SaveProductException();
+        }
     }
 
     @Override
@@ -173,17 +192,29 @@ public class ProductServiceImpl implements ProductService {
         if (name.isPresent()) {
             try {
                 products = productRepository.findByName(name.get(), pageable);
-                List<ProductDTO> productDTOS = productConverter.convertEntitiesToDTOs(products);
-                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
-            } catch (Exception e) {
+                try {
+                    List<ProductDTO> productDTOS = productConverter.convertEntitiesToDTOs(products);
+                    result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (RetrieveProductException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
         } else {
             try {
                 products = productRepository.findAll(pageable);
-                List<ProductDTO> productDTOS = productConverter.convertEntitiesToDTOs(products);
-                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
-            } catch (Exception e) {
+                try {
+                    List<ProductDTO> productDTOS = productConverter.convertEntitiesToDTOs(products);
+                    result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (RetrieveProductException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
         }
@@ -216,7 +247,12 @@ public class ProductServiceImpl implements ProductService {
                 .category(category)
                 .id(-1)
                 .build();
-        productRepository.save(product);
+        try {
+            productRepository.save(product);
+        } catch (SaveProductException e) {
+            logger.error(e.getMessage());
+            throw new SaveProductException();
+        }
         responseDTO.setObject(true);
         responseDTO.setTime(new Date());
         responseDTO.setSuccessCode(SuccessCode.ADD_PRODUCT_SUCCESS);
@@ -236,7 +272,12 @@ public class ProductServiceImpl implements ProductService {
         product.setName(updateProductRequest.getName());
         product.setDescription(updateProductRequest.getDescription());
         product.setUpdatedDate(new Date());
-        productRepository.save(product);
+        try {
+            productRepository.save(product);
+        } catch (SaveProductException e) {
+            logger.error(e.getMessage());
+            throw new SaveProductException();
+        }
         responseDTO.setSuccessCode(SuccessCode.UPDATE_PRODUCT_SUCCESS);
         responseDTO.setTime(new Date());
         responseDTO.setObject(true);
@@ -270,17 +311,29 @@ public class ProductServiceImpl implements ProductService {
         if (name.isPresent()) {
             try {
                 products = productRepository.findByName(name.get(), pageable);
-                List<ProductResponse> productDTOS = productConverter.convertToResponses(products);
-                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
-            } catch (Exception e) {
+                try {
+                    List<ProductResponse> productDTOS = productConverter.convertToResponses(products);
+                    result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (RetrieveProductException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
         } else {
             try {
                 products = productRepository.findAll(pageable);
-                List<ProductResponse> productDTOS = productConverter.convertToResponses(products);
-                result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
-            } catch (Exception e) {
+                try {
+                    List<ProductResponse> productDTOS = productConverter.convertToResponses(products);
+                    result = new PageImpl<>(productDTOS, pageable, productDTOS.size());
+                } catch (ConvertDTOException e) {
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
+            } catch (RetrieveProductException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
         }
@@ -301,10 +354,17 @@ public class ProductServiceImpl implements ProductService {
 
         try {
             Product product = productRepository.findById(productId)
-                    .orElseThrow(ProductNotExistException::new);
+                    .orElseThrow(() -> new ProductNotExistException(ErrorCode.ERROR_PRODUCT_NOT_EXIST));
             List<ProductDetail> productDetails = productDetailRepository.findByProduct(product);
-            result = productConverter.convertToListOfUserProductDetail(productDetails);
-        } catch (Exception e) {
+            try {
+                result = productConverter.convertToListOfUserProductDetail(productDetails);
+
+            } catch (ConvertDTOException e) {
+                logger.error(e.getMessage());
+                throw new ConvertDTOException();
+            }
+        } catch (RetrieveProductDetailException e) {
+            logger.error(e.getMessage());
             throw new RetrieveProductDetailException(ErrorCode.ERROR_RETRIEVE_PRODUCT_DETAIL);
         }
 
@@ -326,12 +386,18 @@ public class ProductServiceImpl implements ProductService {
                     .of(page.orElse(0), size.orElse(5), sortDirection, sort.orElse("id"));
             try {
                 Page<Product> products = productRepository.findByManufacturer(manufacturer, pageable);
-                List<UserProductDTO> list = productConverter.convertToUserDTO(products);
-                result = new PageImpl<>(list, pageable, list.size());
-            } catch (Exception e) {
+                try {
+                    List<UserProductDTO> list = productConverter.convertToUserDTO(products);
+                    result = new PageImpl<>(list, pageable, list.size());
+                } catch (ConvertDTOException e) {
+                    throw new ConvertDTOException();
+                }
+            } catch (RetrieveProductException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
-        } catch (Exception e) {
+        } catch (RetrieveProductException e) {
+            logger.error(e.getMessage());
             throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
         }
 
@@ -354,17 +420,24 @@ public class ProductServiceImpl implements ProductService {
                     .of(page.orElse(0), size.orElse(8), sortDirection, sort.orElse("id"));
             try {
                 Page<Product> products = productRepository.findByCategory(category, pageable);
-                List<ProductResponse> list = productConverter.convertToResponses(products);
-                result = new PageImpl<>(list, pageable, list.size());
+                try {
+                    List<ProductResponse> list = productConverter.convertToResponses(products);
+                    result = new PageImpl<>(list, pageable, list.size());
+                } catch (ConvertDTOException e){
+                    logger.error(e.getMessage());
+                    throw new ConvertDTOException();
+                }
                 response = PageResponse.builder()
                         .content(result.getContent())
                         .currentPage(result.getNumber())
                         .totalElements(products.getTotalElements())
                         .totalPages(products.getTotalPages()).build();
-            } catch (Exception e) {
+            } catch (RetrieveProductException e) {
+                logger.error(e.getMessage());
                 throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
             }
-        } catch (Exception e) {
+        } catch (RetrieveProductException e) {
+            logger.error(e.getMessage());
             throw new RetrieveProductException(ErrorCode.ERROR_RETRIEVE_PRODUCTS);
         }
 

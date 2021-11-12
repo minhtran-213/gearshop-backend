@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
@@ -34,13 +35,17 @@ public class ProductControllerAdmin {
 
     @GetMapping("/productDetails")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> getAllProductDetails (@RequestParam Optional<Integer> productId){
+    public ResponseEntity<ResponseDTO> getAllProductDetails(@RequestParam Optional<Integer> productId) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO result = productService.getAllProductDetailByProduct(productId);
             response = ResponseEntity.ok().body(result);
-        } catch (ProductNotExistException e){
+        } catch (ProductNotExistException e) {
             logger.error(e.getMessage());
+            throw new ProductNotExistException(e.getMessage());
+        } catch (AccessDeniedException e) {
+            logger.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
         }
 
         return response;
@@ -48,13 +53,17 @@ public class ProductControllerAdmin {
 
     @PostMapping("/productDetail")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> addNewProductDetail(@Valid @RequestBody ProductDetailRequest productDetailRequest){
+    public ResponseEntity<ResponseDTO> addNewProductDetail(@Valid @RequestBody ProductDetailRequest productDetailRequest) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.addNewProductDetail(productDetailRequest);
             response = ResponseEntity.ok().body(messageResponse);
-        } catch (ProductNotExistException e){
+        } catch (ProductNotExistException e) {
             logger.error(e.getMessage());
+            throw new ProductNotExistException(e.getMessage());
+        } catch (AccessDeniedException e) {
+            logger.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
         }
 
         return response;
@@ -62,25 +71,32 @@ public class ProductControllerAdmin {
 
     @PutMapping("/productDetail/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> updateProductDetail (@PathVariable int id, @Valid @RequestBody ProductDetailRequest productDetailRequest){
+    public ResponseEntity<ResponseDTO> updateProductDetail(@PathVariable int id, @Valid @RequestBody ProductDetailRequest productDetailRequest) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.updateProductDetail(id, productDetailRequest);
             response = ResponseEntity.ok().body(messageResponse);
-        } catch (ProductDetailNotExistException | ProductNotExistException e){
+        } catch (ProductDetailNotExistException e) {
             logger.error(e.getMessage());
+            throw new ProductDetailNotExistException(e.getMessage());
+        } catch (ProductNotExistException e) {
+            logger.error(e.getMessage());
+            throw new ProductNotExistException();
+        } catch (AccessDeniedException e) {
+            logger.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
         }
         return response;
     }
 
     @DeleteMapping("/productDetail/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> deleteProductDetail(@PathVariable int id){
+    public ResponseEntity<ResponseDTO> deleteProductDetail(@PathVariable int id) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.deleteProductDetail(id);
             response = ResponseEntity.ok().body(messageResponse);
-        } catch (ProductDetailNotExistException e){
+        } catch (ProductDetailNotExistException e) {
             logger.error(e.getMessage());
         }
         return response;
@@ -89,15 +105,15 @@ public class ProductControllerAdmin {
     @GetMapping("/products")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseDTO> getAllProducts(@RequestParam Optional<Integer> page,
-                                            @RequestParam Optional<Integer> size,
-                                            @RequestParam Optional<String> sort,
-                                            @RequestParam Optional<String> direction,
-                                            @RequestParam Optional<String> name){
+                                                      @RequestParam Optional<Integer> size,
+                                                      @RequestParam Optional<String> sort,
+                                                      @RequestParam Optional<String> direction,
+                                                      @RequestParam Optional<String> name) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO products = productService.getAllProductsPaging(page, size, sort, direction, name);
             response = ResponseEntity.ok().body(products);
-        }catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
         return response;
@@ -105,12 +121,12 @@ public class ProductControllerAdmin {
 
     @PostMapping("/product")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> addNewProduct(@RequestBody ProductRequest productRequest){
+    public ResponseEntity<ResponseDTO> addNewProduct(@RequestBody ProductRequest productRequest) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.addNewProduct(productRequest);
             response = ResponseEntity.ok().body(messageResponse);
-        } catch (CategoryNotExistException | ManufacturerNotExistException e){
+        } catch (CategoryNotExistException | ManufacturerNotExistException e) {
             logger.error(e.getMessage());
         }
         return response;
@@ -118,12 +134,12 @@ public class ProductControllerAdmin {
 
     @PutMapping("/product/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> updateProduct(@PathVariable int id, @RequestBody UpdateProductRequest updateProductRequest){
+    public ResponseEntity<ResponseDTO> updateProduct(@PathVariable int id, @RequestBody UpdateProductRequest updateProductRequest) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.updateProduct(id, updateProductRequest);
             response = ResponseEntity.ok().body(messageResponse);
-        } catch (CategoryNotExistException | ManufacturerNotExistException e){
+        } catch (CategoryNotExistException | ManufacturerNotExistException e) {
             logger.error(e.getMessage());
         }
         return response;
@@ -131,12 +147,12 @@ public class ProductControllerAdmin {
 
     @DeleteMapping("/product/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable int id){
+    public ResponseEntity<ResponseDTO> deleteProduct(@PathVariable int id) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.deleteProduct(id);
             response = ResponseEntity.ok().body(messageResponse);
-        } catch (ProductNotExistException e){
+        } catch (ProductNotExistException e) {
             logger.error(e.getMessage());
         }
         return response;
@@ -145,12 +161,12 @@ public class ProductControllerAdmin {
 
     @GetMapping("/product/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> getProduct (@PathVariable int id){
+    public ResponseEntity<ResponseDTO> getProduct(@PathVariable int id) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO messageResponse = productService.getProductById(id);
             response = ResponseEntity.ok().body(messageResponse);
-        } catch (ProductNotExistException e){
+        } catch (ProductNotExistException e) {
             logger.error(e.getMessage());
         }
         return response;
