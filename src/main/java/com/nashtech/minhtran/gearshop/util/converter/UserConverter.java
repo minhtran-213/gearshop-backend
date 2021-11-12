@@ -2,7 +2,6 @@ package com.nashtech.minhtran.gearshop.util.converter;
 
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.AddUserRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
 import com.nashtech.minhtran.gearshop.exception.ConvertDTOException;
 import com.nashtech.minhtran.gearshop.model.User;
 import org.modelmapper.ModelMapper;

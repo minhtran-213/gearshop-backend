@@ -11,7 +11,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class UpdateUserRequest {
+public class UpdateProfile {
 
     private String phoneNumber;
 

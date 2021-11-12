@@ -1,7 +1,7 @@
 package com.nashtech.minhtran.gearshop.api.common;
 
 import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
+import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateProfile;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.InvalidOldPasswordException;
 import com.nashtech.minhtran.gearshop.services.UserService;
@@ -47,10 +47,10 @@ public class UserController {
 
     @PutMapping("/user")
     @PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-    public ResponseEntity<ResponseDTO> updateProfile(@Valid @RequestBody UpdateUserRequest updateUserRequest){
+    public ResponseEntity<ResponseDTO> updateProfile(@Valid @RequestBody UpdateProfile updateProfile){
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
-            ResponseDTO responseDTO = userService.updateProfile(updateUserRequest);
+            ResponseDTO responseDTO = userService.updateProfile(updateProfile);
             response = ResponseEntity.ok().body(responseDTO);
         } catch (AccessDeniedException e){
             logger.error(e.getMessage());

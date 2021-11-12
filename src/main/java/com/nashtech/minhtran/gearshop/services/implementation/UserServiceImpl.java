@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -33,7 +32,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.parameters.P;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -218,15 +216,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResponseDTO updateProfile(@Valid UpdateUserRequest updateUserRequest) throws AccessDeniedException {
+    public ResponseDTO updateProfile(@Valid UpdateProfile updateProfile) throws AccessDeniedException {
         try {
             User user = userRepository.findByEmail(SecurityContextHolder.getContext().getAuthentication().getName()).orElse(null);
             if (user != null) {
-                user.setPhoneNumber(updateUserRequest.getPhoneNumber());
-                user.setFirstName(updateUserRequest.getFirstName());
-                user.setLastName(updateUserRequest.getLastName());
-                user.setBirthday(updateUserRequest.getBirthday());
-                user.setGender(updateUserRequest.getGender());
+                user.setPhoneNumber(updateProfile.getPhoneNumber());
+                user.setFirstName(updateProfile.getFirstName());
+                user.setLastName(updateProfile.getLastName());
+                user.setBirthday(updateProfile.getBirthday());
+                user.setGender(updateProfile.getGender());
                 try {
                     userRepository.save(user);
                 } catch (SaveUserException e) {
@@ -367,6 +365,36 @@ public class UserServiceImpl implements UserService {
             logger.error(e.getMessage());
             throw new EmailExistException(ErrorCode.EXIST_EMAIL);
         }
+    }
+
+    @Override
+    public ResponseDTO updateUser(int id, UserUpdateRequest request) throws SaveUserException{
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+        try {
+            user.setGender(request.getGender());
+            user.setPhoneNumber(request.getPhoneNumber());
+            user.setBirthday(request.getBirthday());
+            user.setFirstName(request.getFirstName());
+            user.setLastName(request.getLastName());
+            user.setAvatarUrl(request.getAvatarUrl());
+            for (Role role : user.getRoles()){
+                if (role.getName().equals(request.getRole())){
+                    throw new RoleExistedException("Role has existed");
+                }
+            }
+            Role role = roleRepository.findByName(request.getRole()).orElseThrow(() -> new RuntimeException("No role found"));
+            user.getRoles().add(role);
+            try {
+                userRepository.save(user);
+            } catch (Exception e){
+                logger.error(e.getMessage());
+                throw new SaveUserException(ErrorCode.SAVE_USER_FAIL);
+            }
+        } catch (Exception e){
+            logger.error(e.getMessage());
+            throw new SaveUserException(ErrorCode.SAVE_USER_FAIL);
+        }
+        return new ResponseDTO("User update successful", true);
     }
 
     private boolean checkIfValidOldPassword(User user, String oldPassword) {

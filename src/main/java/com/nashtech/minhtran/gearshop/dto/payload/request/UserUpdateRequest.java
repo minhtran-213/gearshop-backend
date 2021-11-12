@@ -1,35 +1,21 @@
 package com.nashtech.minhtran.gearshop.dto.payload.request;
 
 import com.nashtech.minhtran.gearshop.model.ERole;
-import com.nashtech.minhtran.gearshop.model.Role;
 import lombok.*;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
+import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString
-public class AddUserRequest {
+public class UserUpdateRequest {
 
-    @NotNull
-    private String email;
-
-    @Column(name = "phoneNumber")
     private String phoneNumber;
 
-    @Column(name = "avatarUrl")
     private String avatarUrl;
-
-    @NotNull
-    @Column(name = "password", nullable = false)
-    private String password;
 
     @NotNull
     private String firstName;
@@ -40,9 +26,6 @@ public class AddUserRequest {
     private Date birthday;
 
     private String gender;
-
-    @NotNull
-    private Date dateCreated;
 
     @NotNull
     private ERole role;

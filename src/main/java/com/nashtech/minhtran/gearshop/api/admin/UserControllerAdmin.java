@@ -1,12 +1,11 @@
 package com.nashtech.minhtran.gearshop.api.admin;
 
+import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
 import com.nashtech.minhtran.gearshop.dto.payload.request.AddUserRequest;
+import com.nashtech.minhtran.gearshop.dto.payload.request.UserUpdateRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
-import com.nashtech.minhtran.gearshop.exception.EmailExistException;
-import com.nashtech.minhtran.gearshop.exception.InvalidEmailException;
-import com.nashtech.minhtran.gearshop.exception.InvalidPasswordException;
-import com.nashtech.minhtran.gearshop.exception.SaveUserException;
+import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.User;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -95,6 +94,28 @@ public class UserControllerAdmin {
             throw new EmailExistException(e.getMessage());
         } catch (Exception e){
             logger.info(addUserRequest.toString());
+            logger.error(e.getMessage());
+        }
+        return response;
+    }
+
+    @PutMapping("/user/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> updateUser (@PathVariable int id, @RequestBody UserUpdateRequest request){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO responseDTO = userService.updateUser(id, request);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (AccessDeniedException e){
+            logger.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
+        } catch (SaveUserException e){
+            logger.error(e.getMessage());
+            throw new SaveUserException(e.getMessage());
+        } catch (UserNotFoundException e){
+          logger.error(e.getMessage());
+          throw new UserNotFoundException(e.getMessage());
+        } catch (Exception e){
             logger.error(e.getMessage());
         }
         return response;
