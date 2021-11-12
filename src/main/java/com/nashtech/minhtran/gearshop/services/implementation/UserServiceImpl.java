@@ -397,6 +397,18 @@ public class UserServiceImpl implements UserService {
         return new ResponseDTO("User update successful", true);
     }
 
+    @Override
+    public ResponseDTO deleteUser(int id) throws UserNotFoundException {
+        User user = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException(ErrorCode.ERROR_USER_NOT_FOUND));
+        try {
+            userRepository.delete(user);
+        } catch (UserNotFoundException e){
+            logger.error(e.getMessage());
+            throw new UserNotFoundException(e.getMessage());
+        }
+        return new ResponseDTO("Delete successful", true);
+    }
+
     private boolean checkIfValidOldPassword(User user, String oldPassword) {
         return BCrypt.checkpw(oldPassword, user.getPassword());
     }

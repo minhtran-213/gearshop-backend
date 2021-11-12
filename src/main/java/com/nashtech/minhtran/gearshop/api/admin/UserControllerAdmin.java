@@ -120,4 +120,18 @@ public class UserControllerAdmin {
         }
         return response;
     }
+
+    @DeleteMapping("/user/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> deleteUSer(@PathVariable int id){
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO responseDTO = userService.deleteUser(id);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (UserNotFoundException e){
+            logger.error(e.getMessage());
+            throw new UserNotFoundException(e.getMessage());
+        }
+        return response;
+    }
 }

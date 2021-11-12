@@ -3,6 +3,7 @@ package com.nashtech.minhtran.gearshop.services;
 import com.nashtech.minhtran.gearshop.dto.payload.request.*;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 
 import javax.validation.Valid;
@@ -19,4 +20,5 @@ public interface UserService {
     ResponseDTO updateAddress(int id, AddressRequestDTO addressRequestDTO) throws AddressNotFoundException;
     ResponseDTO addUser(AddUserRequest request) throws SaveUserException, InvalidEmailException, InvalidPasswordException, EmailExistException;
     ResponseDTO updateUser(int id, UserUpdateRequest request) throws SaveUserException;
+    ResponseDTO deleteUser(int id) throws UserNotFoundException;
 }
