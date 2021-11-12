@@ -1,7 +1,12 @@
 package com.nashtech.minhtran.gearshop.api.admin;
 
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.request.AddUserRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
+import com.nashtech.minhtran.gearshop.exception.EmailExistException;
+import com.nashtech.minhtran.gearshop.exception.InvalidEmailException;
+import com.nashtech.minhtran.gearshop.exception.InvalidPasswordException;
+import com.nashtech.minhtran.gearshop.exception.SaveUserException;
 import com.nashtech.minhtran.gearshop.model.User;
 import com.nashtech.minhtran.gearshop.services.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,6 +25,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Optional;
 
 @RestController
@@ -39,11 +45,11 @@ public class UserControllerAdmin {
                                                 @RequestParam Optional<String> sort,
                                                 @RequestParam Optional<String> direction,
                                                 @RequestParam Optional<String> firstName) {
-       ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO result = userService.getAllUser(page, size, sort, direction, firstName);
             response = ResponseEntity.ok().body(result);
-        } catch (AccessDeniedException e){
+        } catch (AccessDeniedException e) {
             logger.error(e.getMessage());
             throw new AccessDeniedException(e.getMessage());
         }
@@ -53,12 +59,42 @@ public class UserControllerAdmin {
 
     @GetMapping("/users/{id}/address")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ResponseDTO> getAddressesFromUser(@PathVariable int id){
+    public ResponseEntity<ResponseDTO> getAddressesFromUser(@PathVariable int id) {
         ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
         try {
             ResponseDTO responseDTO = userService.getAddressFromUser(id);
             response = ResponseEntity.ok().body(responseDTO);
-        } catch (AccessDeniedException e){
+        } catch (AccessDeniedException e) {
+            logger.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
+        }
+        return response;
+    }
+
+    @PostMapping("/user")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ResponseDTO> addNewUser(@Valid @RequestBody AddUserRequest addUserRequest) {
+        ResponseEntity<ResponseDTO> response = new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            ResponseDTO responseDTO = userService.addUser(addUserRequest);
+            response = ResponseEntity.ok().body(responseDTO);
+        } catch (AccessDeniedException e) {
+            logger.error(e.getMessage());
+            throw new AccessDeniedException(e.getMessage());
+        } catch (SaveUserException e) {
+            logger.error(e.getMessage());
+            throw new SaveUserException(e.getMessage());
+        } catch (InvalidEmailException e) {
+            logger.error(e.getMessage());
+            throw new InvalidEmailException(e.getMessage());
+        } catch (InvalidPasswordException e) {
+            logger.error(e.getMessage());
+            throw new InvalidPasswordException(e.getMessage());
+        } catch (EmailExistException e){
+            logger.error(e.getMessage());
+            throw new EmailExistException(e.getMessage());
+        } catch (Exception e){
+            logger.info(addUserRequest.toString());
             logger.error(e.getMessage());
         }
         return response;

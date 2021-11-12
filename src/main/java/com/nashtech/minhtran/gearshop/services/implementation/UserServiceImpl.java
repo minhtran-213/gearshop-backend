@@ -4,11 +4,8 @@ import com.nashtech.minhtran.gearshop.constants.ErrorCode;
 import com.nashtech.minhtran.gearshop.constants.SuccessCode;
 import com.nashtech.minhtran.gearshop.dto.AddressDTO;
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
+import com.nashtech.minhtran.gearshop.dto.payload.request.*;
 import com.nashtech.minhtran.gearshop.dto.payload.response.*;
-import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
 import com.nashtech.minhtran.gearshop.exception.*;
 import com.nashtech.minhtran.gearshop.model.Address;
 import com.nashtech.minhtran.gearshop.model.ERole;
@@ -322,6 +319,54 @@ public class UserServiceImpl implements UserService {
             throw new SaveAddressException(e.getMessage());
         }
         return new ResponseDTO(SuccessCode.UPDATE_ADDRESS_SUCCESSFUL, true);
+    }
+
+    @Override
+    public ResponseDTO addUser(@Valid AddUserRequest request) throws ConvertDTOException, SaveUserException, InvalidEmailException, InvalidPasswordException, EmailExistException {
+        try {
+            if (!Validation.checkValidEmail(request.getEmail())){
+                throw new InvalidEmailException("Email is invalid");
+            }
+            if (!Validation.checkValidPassword(request.getPassword())){
+                throw new InvalidPasswordException("Password is invalid");
+            }
+            if (userRepository.existsByEmail(request.getEmail())){
+                throw new EmailExistException("Email has taken");
+            }
+
+            String newPassword = passwordEncoder.encode(request.getPassword());
+            User user = User.builder()
+                    .id(0)
+                    .email(request.getEmail())
+                    .password(newPassword)
+                    .firstName(request.getFirstName())
+                    .lastName(request.getLastName())
+                    .gender(request.getGender())
+                    .birthday(request.getBirthday())
+                    .phoneNumber(request.getPhoneNumber())
+                    .avatarUrl(request.getAvatarUrl())
+                    .dateCreated(new Date())
+                    .build();
+            Set<Role> roles = new HashSet<>();
+            Role role = roleRepository.findByName(request.getRole()).orElseThrow(() -> new RuntimeException("No role found"));
+            roles.add(role);
+            user.setRoles(roles);
+            try {
+                userRepository.save(user);
+            } catch (SaveUserException e){
+                logger.error(e.getMessage());
+                throw new SaveUserException();
+            } return new ResponseDTO("User register successful", true);
+        } catch (InvalidPasswordException e){
+            logger.error(e.getMessage());
+            throw new InvalidPasswordException(ErrorCode.INVALID_PASSWORD_FORMAT);
+        } catch (InvalidEmailException e) {
+            logger.error(e.getMessage());
+            throw new InvalidEmailException(ErrorCode.INVALID_EMAIL_FORMAT);
+        } catch (EmailExistException e) {
+            logger.error(e.getMessage());
+            throw new EmailExistException(ErrorCode.EXIST_EMAIL);
+        }
     }
 
     private boolean checkIfValidOldPassword(User user, String oldPassword) {

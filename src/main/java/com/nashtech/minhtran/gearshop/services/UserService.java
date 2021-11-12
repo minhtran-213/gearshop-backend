@@ -1,9 +1,6 @@
 package com.nashtech.minhtran.gearshop.services;
 
-import com.nashtech.minhtran.gearshop.dto.payload.request.AddressRequestDTO;
-import com.nashtech.minhtran.gearshop.dto.payload.request.LoginRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.request.SignupRequest;
-import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
+import com.nashtech.minhtran.gearshop.dto.payload.request.*;
 import com.nashtech.minhtran.gearshop.dto.payload.response.ResponseDTO;
 import com.nashtech.minhtran.gearshop.exception.*;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,4 +17,5 @@ public interface UserService {
     ResponseDTO getAddressFromUser(int id) throws RetrieveAddressException;
     ResponseDTO addNewAddress(AddressRequestDTO addressRequestDTO) throws RetrieveAddressException;
     ResponseDTO updateAddress(int id, AddressRequestDTO addressRequestDTO) throws AddressNotFoundException;
+    ResponseDTO addUser(AddUserRequest request) throws ConvertDTOException, SaveUserException, InvalidEmailException, InvalidPasswordException, EmailExistException;
 }

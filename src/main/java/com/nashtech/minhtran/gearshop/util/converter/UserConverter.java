@@ -1,6 +1,7 @@
 package com.nashtech.minhtran.gearshop.util.converter;
 
 import com.nashtech.minhtran.gearshop.dto.UserDTO;
+import com.nashtech.minhtran.gearshop.dto.payload.request.AddUserRequest;
 import com.nashtech.minhtran.gearshop.dto.payload.request.UpdateUserRequest;
 import com.nashtech.minhtran.gearshop.exception.ConvertDTOException;
 import com.nashtech.minhtran.gearshop.model.User;
@@ -18,7 +19,11 @@ public class UserConverter {
     @Autowired
     ModelMapper mapper;
 
-    public List<UserDTO> convertToListUserDTO (Page<User> users) throws ConvertDTOException {
+    public User convertRequestToModel(AddUserRequest addUserRequest) throws ConvertDTOException {
+        return mapper.map(addUserRequest, User.class);
+    }
+
+    public List<UserDTO> convertToListUserDTO(Page<User> users) throws ConvertDTOException {
         return users.stream().map(user -> mapper.map(user, UserDTO.class)).collect(Collectors.toList());
     }
 }
